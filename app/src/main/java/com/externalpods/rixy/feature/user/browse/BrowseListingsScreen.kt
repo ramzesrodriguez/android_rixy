@@ -33,11 +33,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.externalpods.rixy.core.designsystem.components.EmptyErrorState
-import com.externalpods.rixy.core.designsystem.components.EmptySearchResults
-import com.externalpods.rixy.core.designsystem.components.ListingCard
-import com.externalpods.rixy.core.designsystem.components.ListingCardSkeleton
-import com.externalpods.rixy.core.designsystem.components.SearchBar
+import com.externalpods.rixy.core.designsystem.components.v2.DSListingCard
+import com.externalpods.rixy.core.designsystem.components.v2.DSListingCardSkeleton
+import com.externalpods.rixy.core.designsystem.components.v2.DSSearchField
+import com.externalpods.rixy.core.designsystem.components.v2.EmptyStateSearch
+import com.externalpods.rixy.core.designsystem.components.v2.ErrorViewGeneric
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.Listing
@@ -99,8 +99,8 @@ fun BrowseListingsScreen(
                 .padding(paddingValues)
         ) {
             // Search bar
-            SearchBar(
-                query = uiState.searchQuery,
+            DSSearchField(
+                value = uiState.searchQuery,
                 onQueryChange = viewModel::onSearchQueryChange,
                 onSearch = { viewModel.search() },
                 placeholder = "Buscar anuncios...",
@@ -124,14 +124,14 @@ fun BrowseListingsScreen(
                     BrowseLoadingState()
                 }
                 uiState.error != null && uiState.listings.isEmpty() -> {
-                    EmptyErrorState(
+                    ErrorViewGeneric(
                         message = uiState.error ?: "Error al cargar",
                         onRetry = { viewModel.refresh() },
                         modifier = Modifier.fillMaxSize()
                     )
                 }
                 uiState.listings.isEmpty() && uiState.searchQuery.isNotEmpty() -> {
-                    EmptySearchResults(
+                    EmptyStateSearch(
                         query = uiState.searchQuery,
                         onClearSearch = { viewModel.onSearchQueryChange("") }
                     )
@@ -161,13 +161,16 @@ fun BrowseListingsScreen(
                             items = uiState.listings,
                             key = { it.id }
                         ) { listing ->
-                            ListingCard(
+                            DSListingCard(
                                 title = listing.title,
                                 imageUrl = listing.photoUrls?.firstOrNull(),
-                                price = listing.productDetails?.priceAmount,
-                                type = listing.type,
+                                priceFormatted = listing.productDetails?.priceAmount
+                                    ?: listing.serviceDetails?.priceAmount
+                                    ?: listing.eventDetails?.priceAmount,
+                                type = com.externalpods.rixy.core.designsystem.components.v2.ListingType.valueOf(listing.type.name),
                                 businessName = listing.business?.name,
-                                onClick = { onListingClick(listing) }
+                                onCardClick = { onListingClick(listing) },
+                                useFixedWidth = false
                             )
                         }
                         
@@ -238,7 +241,7 @@ private fun BrowseLoadingState(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(6) {
-            ListingCardSkeleton()
+            DSListingCardSkeleton(modifier = Modifier.fillMaxWidth())
         }
     }
 }

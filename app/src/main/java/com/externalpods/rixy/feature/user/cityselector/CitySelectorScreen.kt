@@ -29,8 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.externalpods.rixy.core.designsystem.components.CityCard
 import com.externalpods.rixy.core.designsystem.components.CityCardSkeleton
-import com.externalpods.rixy.core.designsystem.components.EmptyErrorState
-import com.externalpods.rixy.core.designsystem.components.SearchBar
+import com.externalpods.rixy.core.designsystem.components.v2.DSSearchField
+import com.externalpods.rixy.core.designsystem.components.v2.ErrorViewGeneric
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.City
@@ -71,9 +71,9 @@ fun CitySelectorScreen(
                 .padding(horizontal = 16.dp)
         ) {
             // Search bar
-            SearchBar(
-                query = uiState.searchQuery,
-                onQueryChange = viewModel::onSearchQueryChange,
+            DSSearchField(
+                value = uiState.searchQuery,
+                onValueChange = viewModel::onSearchQueryChange,
                 onSearch = { /* Already filtering on query change */ },
                 placeholder = "Buscar ciudad...",
                 modifier = Modifier.padding(vertical = 8.dp)
@@ -87,7 +87,7 @@ fun CitySelectorScreen(
                     CitiesLoadingState()
                 }
                 uiState.error != null -> {
-                    EmptyErrorState(
+                    ErrorViewGeneric(
                         message = uiState.error ?: "Error desconocido",
                         onRetry = viewModel::loadCities,
                         modifier = Modifier.fillMaxSize()

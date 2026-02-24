@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -66,6 +67,7 @@ import com.externalpods.rixy.core.designsystem.theme.RixyTypography
  * @param isFavorite Current favorite state (null = manage locally)
  * @param onFavoriteClick Callback when heart is clicked
  * @param onCardClick Callback when card is clicked
+ * @param useFixedWidth Whether to keep the default iOS fixed width (260dp)
  * @param modifier Modifier to apply
  */
 @Composable
@@ -78,6 +80,7 @@ fun DSListingCard(
     isFavorite: Boolean? = null,
     onFavoriteClick: (() -> Unit)? = null,
     onCardClick: () -> Unit,
+    useFixedWidth: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
@@ -92,13 +95,13 @@ fun DSListingCard(
     )
     
     // Fixed dimensions from iOS
-    val cardWidth = 260.dp
+    val cardWidth: Dp = 260.dp
     val imageHeight = 195.dp // 4:3 aspect ratio of 260dp
     val infoHeight = 100.dp
     
     Column(
         modifier = modifier
-            .width(cardWidth)
+            .then(if (useFixedWidth) Modifier.width(cardWidth) else Modifier.fillMaxWidth())
             .iosShadow(style = RixyShadows.Card, shape = RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
             .background(RixyColors.Surface)
@@ -286,5 +289,4 @@ fun DSListingCardCompact(
         // )
     }
 }
-
 

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -91,28 +90,6 @@ fun EmptySearchResults(
                 text = "Limpiar búsqueda",
                 onClick = onClearSearch,
                 variant = ButtonVariant.OUTLINE
-            )
-        },
-        modifier = modifier
-    )
-}
-
-/**
- * Empty state for listings
- */
-@Composable
-fun EmptyListings(
-    onBrowse: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    EmptyStateView(
-        title = "No hay anuncios",
-        subtitle = "Sé el primero en publicar un anuncio en esta categoría",
-        icon = Icons.Default.ShoppingCart,
-        action = {
-            RixyButton(
-                text = "Explorar",
-                onClick = onBrowse
             )
         },
         modifier = modifier
