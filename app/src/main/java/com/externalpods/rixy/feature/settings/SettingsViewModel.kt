@@ -3,7 +3,8 @@ package com.externalpods.rixy.feature.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.externalpods.rixy.core.model.AppMode
-import com.externalpods.rixy.navigation.AppState
+import com.externalpods.rixy.navigation.AppMode as NavigationAppMode
+import com.externalpods.rixy.navigation.AppStateViewModel
 import com.externalpods.rixy.service.AuthService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +21,7 @@ data class SettingsUiState(
 
 class SettingsViewModel(
     private val authService: AuthService,
-    private val appState: AppState
+    private val appState: AppStateViewModel
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
@@ -28,10 +29,13 @@ class SettingsViewModel(
 
     init {
         viewModelScope.launch {
-            // Observe app state changes
-            appState.currentMode.collect { mode ->
-                _uiState.update { it.copy(currentMode = mode) }
+            // Map navigation AppMode to core AppMode
+            val mode = when (appState.currentMode.value) {
+                NavigationAppMode.USER -> AppMode.USER
+                NavigationAppMode.OWNER -> AppMode.OWNER
+                NavigationAppMode.ADMIN -> AppMode.ADMIN
             }
+            _uiState.update { it.copy(currentMode = mode) }
         }
         viewModelScope.launch {
             appState.currentUser.collect { user ->
@@ -41,7 +45,12 @@ class SettingsViewModel(
     }
 
     fun switchMode(mode: AppMode) {
-        appState.switchMode(mode)
+        val navMode = when (mode) {
+            AppMode.USER -> NavigationAppMode.USER
+            AppMode.OWNER -> NavigationAppMode.OWNER
+            AppMode.ADMIN -> NavigationAppMode.ADMIN
+        }
+        appState.switchMode(navMode)
     }
 
     fun signOut() {

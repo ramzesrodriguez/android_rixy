@@ -19,12 +19,16 @@ class DataStoreManager(private val context: Context) {
     val selectedCityId: Flow<String?> = context.dataStore.data.map { it[CITY_ID] }
     val selectedCitySlug: Flow<String?> = context.dataStore.data.map { it[CITY_SLUG] }
     val selectedCityName: Flow<String?> = context.dataStore.data.map { it[CITY_NAME] }
+    val selectedCityState: Flow<String?> = context.dataStore.data.map { it[CITY_STATE] }
+    val selectedCityCountry: Flow<String?> = context.dataStore.data.map { it[CITY_COUNTRY] }
 
-    suspend fun saveSelectedCity(id: String, slug: String, name: String) {
+    suspend fun saveSelectedCity(id: String, slug: String, name: String, state: String?, country: String?) {
         context.dataStore.edit { prefs ->
             prefs[CITY_ID] = id
             prefs[CITY_SLUG] = slug
             prefs[CITY_NAME] = name
+            state?.let { prefs[CITY_STATE] = it }
+            country?.let { prefs[CITY_COUNTRY] = it }
         }
     }
 
@@ -70,6 +74,8 @@ class DataStoreManager(private val context: Context) {
         private val CITY_ID = stringPreferencesKey("selected_city_id")
         private val CITY_SLUG = stringPreferencesKey("selected_city_slug")
         private val CITY_NAME = stringPreferencesKey("selected_city_name")
+        private val CITY_STATE = stringPreferencesKey("selected_city_state")
+        private val CITY_COUNTRY = stringPreferencesKey("selected_city_country")
         private val APP_MODE = stringPreferencesKey("app_mode")
         private val IS_AUTHENTICATED = booleanPreferencesKey("is_authenticated")
         private val USER_ID = stringPreferencesKey("current_user_id")

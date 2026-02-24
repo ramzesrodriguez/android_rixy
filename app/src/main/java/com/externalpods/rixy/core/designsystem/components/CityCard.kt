@@ -23,7 +23,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import com.externalpods.rixy.core.designsystem.components.v2.DSAsyncImage
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 
@@ -49,8 +49,8 @@ fun CityCard(
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             // Background image
-            AsyncImage(
-                model = imageUrl,
+            DSAsyncImage(
+                imageUrl = imageUrl,
                 contentDescription = name,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
@@ -117,8 +117,8 @@ fun CityCardCompact(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            AsyncImage(
-                model = imageUrl,
+            DSAsyncImage(
+                imageUrl = imageUrl,
                 contentDescription = name,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop

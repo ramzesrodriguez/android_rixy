@@ -12,6 +12,7 @@ object RixyColors {
     // Core Palette
     val Structure = Color(0xFF1D1D1F)
     val Brand = Color(0xFFE61E4D)
+    val BrandLight = Color(0xFFFFE4EC)  // Light brand background
     val Action = Color(0xFF06B6D4)
     val Monetization = Color(0xFFFF9F1C)
     val Community = Color(0xFF7C9A92)

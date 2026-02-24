@@ -27,6 +27,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,16 +48,16 @@ import org.koin.core.parameter.parametersOf
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BrowseListingsScreen(
-    cityId: String? = null,
-    initialType: ListingType? = null,
-    onBackClick: () -> Unit,
+    citySlug: String? = null,
+    onBackClick: (() -> Unit)?,
     onListingClick: (Listing) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: BrowseListingsViewModel = koinViewModel { 
-        parametersOf(cityId, initialType?.name) 
+        parametersOf(citySlug)
     }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val latestUiState by rememberUpdatedState(uiState)
     val gridState = rememberLazyGridState()
     
     // Infinite scroll
@@ -64,8 +65,12 @@ fun BrowseListingsScreen(
         snapshotFlow { gridState.layoutInfo.visibleItemsInfo }
             .collect { visibleItems ->
                 val lastVisibleItem = visibleItems.lastOrNull()?.index ?: 0
-                val totalItems = uiState.listings.size
-                if (lastVisibleItem >= totalItems - 5 && !uiState.isLoading && uiState.hasMorePages) {
+                val totalItems = latestUiState.listings.size
+                if (lastVisibleItem >= totalItems - 5 &&
+                    !latestUiState.isLoading &&
+                    !latestUiState.isLoadingMore &&
+                    latestUiState.hasMorePages
+                ) {
                     viewModel.loadNextPage()
                 }
             }
@@ -76,18 +81,20 @@ fun BrowseListingsScreen(
             TopAppBar(
                 title = { Text("Explorar", style = RixyTypography.H4) },
                 navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Regresar"
-                        )
+                    if (onBackClick != null) {
+                        IconButton(onClick = onBackClick) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Regresar"
+                            )
+                        }
                     }
                 }
             )
         }
     ) { paddingValues ->
         Column(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
@@ -150,7 +157,10 @@ fun BrowseListingsScreen(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(uiState.listings, key = { it.id }) { listing ->
+                        items(
+                            items = uiState.listings,
+                            key = { it.id }
+                        ) { listing ->
                             ListingCard(
                                 title = listing.title,
                                 imageUrl = listing.photoUrls?.firstOrNull(),
@@ -162,7 +172,7 @@ fun BrowseListingsScreen(
                         }
                         
                         // Loading indicator at bottom
-                        if (uiState.isLoading) {
+                        if (uiState.isLoadingMore) {
                             item {
                                 Box(
                                     modifier = Modifier

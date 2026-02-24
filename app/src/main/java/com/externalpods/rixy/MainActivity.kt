@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.externalpods.rixy.core.designsystem.theme.RixyTheme
-import com.externalpods.rixy.navigation.RixyNavGraph
+import com.externalpods.rixy.ui.ContentView
 import com.externalpods.rixy.service.PaymentHandler
 import com.externalpods.rixy.service.PaymentResult
 import com.externalpods.rixy.service.PaymentStatus
@@ -54,7 +54,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                     
-                    RixyNavGraph()
+                    ContentView()
                     
                     // Show payment status if processing
                     paymentMessage?.let { message ->

@@ -4,11 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.externalpods.rixy.core.model.City
 import com.externalpods.rixy.core.model.CityHome
-import com.externalpods.rixy.core.model.CityHomeSection
+import com.externalpods.rixy.core.model.CitySection
 import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.domain.usecase.city.GetCityHomeUseCase
-import com.externalpods.rixy.navigation.AppState
-import com.externalpods.rixy.service.AnalyticsService
+import com.externalpods.rixy.navigation.AppStateViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +18,7 @@ data class CityHomeUiState(
     val city: City? = null,
     val featured: Listing? = null,
     val feed: List<Listing> = emptyList(),
-    val sections: List<CityHomeSection> = emptyList(),
+    val sections: List<CitySection> = emptyList(),
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val error: String? = null
@@ -27,8 +26,7 @@ data class CityHomeUiState(
 
 class CityHomeViewModel(
     private val getCityHomeUseCase: GetCityHomeUseCase,
-    private val analyticsService: AnalyticsService,
-    private val appState: AppState
+    private val appState: AppStateViewModel
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CityHomeUiState())
@@ -53,63 +51,8 @@ class CityHomeViewModel(
                             city = cityHome.city,
                             featured = cityHome.featured,
                             feed = cityHome.feed,
-                            sections = cityHome.sections.map { section ->
-                                CityHomeSection(
-                                    id = section.id,
-                                    title = section.title,
-                                    displayType = section.type.name.lowercase().let {
-                                        when {
-                                            it.contains("carousel") || it.contains("rail") -> "horizontal"
-                                            it.contains("grid") -> "grid"
-                                            else -> "horizontal"
-                                        }
-                                    },
-                                    listings = cityHome.feed // Default to feed, can be filtered by section type
-                                )
-                            },
-                            isLoading = false
-                        )
-                    }
-                    // Track view
-                    analyticsService.trackView(citySlug, "CITY_HOME", citySlug)
-                }
-                .onFailure { error ->
-                    _uiState.update { 
-                        it.copy(
+                            sections = cityHome.sections,
                             isLoading = false,
-                            error = error.message
-                        )
-                    }
-                }
-        }
-    }
-
-    fun refresh() {
-        val citySlug = _uiState.value.city?.slug ?: return
-        viewModelScope.launch {
-            _uiState.update { it.copy(isRefreshing = true) }
-            
-            getCityHomeUseCase(citySlug)
-                .onSuccess { cityHome ->
-                    _uiState.update { state ->
-                        state.copy(
-                            city = cityHome.city,
-                            featured = cityHome.featured,
-                            feed = cityHome.feed,
-                            sections = cityHome.sections.map { section ->
-                                CityHomeSection(
-                                    id = section.id,
-                                    title = section.title,
-                                    displayType = section.type.name.lowercase().let {
-                                        when {
-                                            it.contains("carousel") || it.contains("rail") -> "horizontal"
-                                            it.contains("grid") -> "grid"
-                                            else -> "horizontal"
-                                        }
-                                    },
-                                    listings = cityHome.feed // Default to feed, can be filtered by section type
-                                )
-                            },
                             isRefreshing = false
                         )
                     }
@@ -117,6 +60,7 @@ class CityHomeViewModel(
                 .onFailure { error ->
                     _uiState.update { 
                         it.copy(
+                            isLoading = false,
                             isRefreshing = false,
                             error = error.message
                         )
@@ -125,11 +69,14 @@ class CityHomeViewModel(
         }
     }
 
-    fun onListingClick(listing: Listing) {
-        // Navigation handled by UI layer
+    fun refresh() {
+        _uiState.value.city?.let { city ->
+            _uiState.update { it.copy(isRefreshing = true) }
+            loadCityHome(city.slug)
+        }
     }
 
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
+    fun retry() {
+        _uiState.value.city?.let { loadCityHome(it.slug) }
     }
 }

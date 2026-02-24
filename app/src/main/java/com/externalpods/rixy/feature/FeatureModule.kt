@@ -14,7 +14,7 @@ import com.externalpods.rixy.feature.owner.featured.FeaturedCampaignsViewModel
 import com.externalpods.rixy.feature.owner.listings.ListingEditorViewModel
 import com.externalpods.rixy.feature.settings.SettingsViewModel
 import com.externalpods.rixy.feature.user.browse.BrowseListingsViewModel
-import com.externalpods.rixy.feature.user.favorites.FavoritesViewModel
+// FavoritesViewModel is defined in AppModule
 import com.externalpods.rixy.feature.user.businessprofile.BusinessProfileViewModel
 import com.externalpods.rixy.feature.user.cityhome.CityHomeViewModel
 import com.externalpods.rixy.feature.user.cityselector.CitySelectorViewModel
@@ -30,11 +30,18 @@ val featureModule = module {
     
     // User Mode
     viewModel { CitySelectorViewModel(get(), get()) }
-    viewModel { CityHomeViewModel(get(), get(), get()) }
+    viewModel { CityHomeViewModel(get(), get()) }
     viewModel { ListingDetailViewModel(get(), get(), get()) }
     viewModel { BusinessProfileViewModel(get(), get(), get(), get()) }
-    viewModel { BrowseListingsViewModel(get(), get()) }
-    viewModel { FavoritesViewModel(get()) }
+    viewModel { params ->
+        BrowseListingsViewModel(
+            getListingsUseCase = get(),
+            appState = get(),
+            citySlugParam = params.getOrNull<String>()
+        )
+    }
+    // Note: AppStateViewModel is injected where AppState was used before
+    // FavoritesViewModel already defined in AppModule
     
     // Owner Mode
     viewModel { OwnerDashboardViewModel(get(), get()) }

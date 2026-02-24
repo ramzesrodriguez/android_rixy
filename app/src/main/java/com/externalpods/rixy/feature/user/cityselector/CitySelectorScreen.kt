@@ -12,7 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -36,6 +40,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun CitySelectorScreen(
     onCitySelected: (City) -> Unit,
+    onBackClick: (() -> Unit)? = null,
     viewModel: CitySelectorViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -48,6 +53,13 @@ fun CitySelectorScreen(
                         text = "Selecciona tu ciudad",
                         style = RixyTypography.H4
                     )
+                },
+                navigationIcon = {
+                    if (onBackClick != null) {
+                        IconButton(onClick = onBackClick) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                        }
+                    }
                 }
             )
         }
@@ -88,7 +100,7 @@ fun CitySelectorScreen(
                     CitiesGrid(
                         cities = uiState.filteredCities,
                         onCitySelected = { city ->
-                            viewModel.onCitySelected(city)
+                            viewModel.selectCity(city)
                             onCitySelected(city)
                         }
                     )
@@ -111,7 +123,7 @@ private fun CitiesGrid(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(cities, key = { it.id }) { city ->
+        items(cities) { city ->
             CityCard(
                 name = city.name,
                 imageUrl = city.heroImageUrl,

@@ -1,12 +1,13 @@
 package com.externalpods.rixy.service
 
-import com.externalpods.rixy.navigation.AppState
+import com.externalpods.rixy.navigation.AppStateViewModel
 import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val serviceModule = module {
-    // Global App State (singleton)
-    single { AppState(get()) }
+    // App State ViewModel
+    viewModel { AppStateViewModel(get()) }
     
     // Services
     single { AuthService(get(), get(), get()) }

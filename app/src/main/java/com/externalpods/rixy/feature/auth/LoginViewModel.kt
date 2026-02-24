@@ -2,7 +2,7 @@ package com.externalpods.rixy.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.externalpods.rixy.navigation.AppState
+import com.externalpods.rixy.navigation.AppStateViewModel
 import com.externalpods.rixy.service.AuthService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +23,7 @@ data class LoginUiState(
 
 class LoginViewModel(
     private val authService: AuthService,
-    private val appState: AppState
+    private val appState: AppStateViewModel
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())

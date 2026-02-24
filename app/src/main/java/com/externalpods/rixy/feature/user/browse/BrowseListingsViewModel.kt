@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.core.model.ListingType
 import com.externalpods.rixy.domain.usecase.listing.GetListingsUseCase
-import com.externalpods.rixy.navigation.AppState
+import com.externalpods.rixy.navigation.AppStateViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +26,8 @@ data class BrowseListingsUiState(
 
 class BrowseListingsViewModel(
     private val getListingsUseCase: GetListingsUseCase,
-    private val appState: AppState
+    private val appState: AppStateViewModel,
+    private val citySlugParam: String? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BrowseListingsUiState())
@@ -42,12 +43,25 @@ class BrowseListingsViewModel(
     }
 
     fun loadListings(refresh: Boolean = true) {
-        val citySlug = appState.selectedCity.value?.slug ?: return
+        val citySlug = resolveCitySlug() ?: return
         
         viewModelScope.launch {
             if (refresh) {
-                _uiState.update { it.copy(isLoading = true, error = null, listings = emptyList()) }
+                _uiState.update {
+                    it.copy(
+                        isLoading = true,
+                        isLoadingMore = false,
+                        error = null,
+                        listings = emptyList(),
+                        nextCursor = null,
+                        hasMorePages = true
+                    )
+                }
             } else {
+                if (_uiState.value.nextCursor.isNullOrBlank()) {
+                    _uiState.update { it.copy(hasMorePages = false, isLoadingMore = false) }
+                    return@launch
+                }
                 _uiState.update { it.copy(isLoadingMore = true) }
             }
             
@@ -58,14 +72,21 @@ class BrowseListingsViewModel(
                 search = _uiState.value.searchQuery.takeIf { it.isNotBlank() },
                 cursor = if (refresh) null else _uiState.value.nextCursor
             )
-                .onSuccess { newListings ->
+                .onSuccess { result ->
                     _uiState.update { state ->
+                        val combined = if (refresh) {
+                            result.data
+                        } else {
+                            (state.listings + result.data).distinctBy { it.id }
+                        }
+
                         state.copy(
-                            listings = if (refresh) newListings else state.listings + newListings,
+                            listings = combined,
+                            nextCursor = result.nextCursor,
+                            hasMorePages = !result.nextCursor.isNullOrBlank(),
                             isLoading = false,
                             isLoadingMore = false,
-                            hasMorePages = newListings.size >= 20, // Assuming page size
-                            nextCursor = newListings.lastOrNull()?.id
+                            error = null
                         )
                     }
                 }
@@ -81,6 +102,12 @@ class BrowseListingsViewModel(
         }
     }
 
+    fun loadNextPage() {
+        if (!_uiState.value.isLoading && !_uiState.value.isLoadingMore && _uiState.value.hasMorePages) {
+            loadListings(refresh = false)
+        }
+    }
+
     fun onSearchQueryChange(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
     }
@@ -89,32 +116,14 @@ class BrowseListingsViewModel(
         loadListings(refresh = true)
     }
 
-    fun applySearch() {
-        loadListings(refresh = true)
-    }
-
-    fun onTypeFilterSelected(type: ListingType?) {
+    fun onTypeSelected(type: ListingType?) {
         _uiState.update { it.copy(selectedType = type) }
         loadListings(refresh = true)
     }
 
-    fun onTypeSelected(type: ListingType?) {
-        onTypeFilterSelected(type)
-    }
-
-    fun onCategoryFilterSelected(category: String?) {
+    fun onCategorySelected(category: String?) {
         _uiState.update { it.copy(selectedCategory = category) }
         loadListings(refresh = true)
-    }
-
-    fun loadMore() {
-        if (_uiState.value.hasMorePages && !_uiState.value.isLoadingMore) {
-            loadListings(refresh = false)
-        }
-    }
-
-    fun loadNextPage() {
-        loadMore()
     }
 
     fun refresh() {
@@ -124,15 +133,17 @@ class BrowseListingsViewModel(
     fun clearFilters() {
         _uiState.update { 
             it.copy(
-                searchQuery = "",
                 selectedType = null,
-                selectedCategory = null
+                selectedCategory = null,
+                searchQuery = ""
             )
         }
         loadListings(refresh = true)
     }
 
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
+    private fun resolveCitySlug(): String? {
+        val explicit = citySlugParam?.trim().orEmpty()
+        if (explicit.isNotBlank()) return explicit
+        return appState.selectedCity.value?.slug
     }
 }
