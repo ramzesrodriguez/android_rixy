@@ -19,13 +19,13 @@ val domainModule = module {
 
     // Listing
     factory { GetListingsUseCase(get()) }
-    factory { GetListingDetailUseCase(get()) }
+    factory { GetListingDetailUseCase(get(), get()) }
     factory { CreateListingUseCase(get()) }
     factory { UpdateListingUseCase(get()) }
     factory { DeleteListingUseCase(get()) }
 
     // Business
-    factory { GetBusinessUseCase(get(), get()) }
+    factory { GetBusinessUseCase(get(), get(), get()) }
     factory { CreateBusinessUseCase(get()) }
     factory { UpdateBusinessUseCase(get()) }
 

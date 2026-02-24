@@ -3,7 +3,9 @@ package com.externalpods.rixy
 import android.app.Application
 import com.externalpods.rixy.core.network.networkModule
 import com.externalpods.rixy.data.dataModule
+import com.externalpods.rixy.di.appModule
 import com.externalpods.rixy.domain.domainModule
+import com.externalpods.rixy.feature.featureModule
 import com.externalpods.rixy.service.serviceModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -19,10 +21,12 @@ class RixyApplication : Application() {
             androidLogger(Level.ERROR)
             androidContext(this@RixyApplication)
             modules(
+                appModule,
                 networkModule,
                 dataModule,
                 domainModule,
-                serviceModule
+                serviceModule,
+                featureModule
             )
         }
     }

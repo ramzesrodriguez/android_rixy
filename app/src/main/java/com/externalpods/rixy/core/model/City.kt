@@ -9,6 +9,7 @@ data class City(
     val id: String,
     val name: String,
     val slug: String,
+    @SerialName("hero_image_url") val heroImageUrl: String? = null,
     @SerialName("is_active") val isActive: Boolean? = null,
     @SerialName("is_publishing_enabled") val isPublishingEnabled: Boolean? = null,
     @SerialName("is_ads_enabled") val isAdsEnabled: Boolean? = null,
@@ -38,7 +39,7 @@ data class City(
     val hasActivePublishing: Boolean get() = isPublishingEnabled == true
     val hasActiveAds: Boolean get() = isAdsEnabled == true
     val isActiveCity: Boolean get() = isActive == true
-    val displayLocation: String get() = listOfNotNull(city, state, country).joinToString(", ")
+    val displayLocation: String get() = listOfNotNull(name, state, country).joinToString(", ")
 }
 
 @Serializable

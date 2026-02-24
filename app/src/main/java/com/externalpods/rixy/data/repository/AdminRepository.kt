@@ -137,7 +137,7 @@ class AdminRepositoryImpl(
     }
 
     override suspend fun deleteCitySection(sectionId: String) {
-        return try {
+        try {
             val response = adminApi.deleteCitySection(sectionId)
             if (!response.isSuccessful) {
                 throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())

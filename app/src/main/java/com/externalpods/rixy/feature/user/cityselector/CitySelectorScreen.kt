@@ -1,0 +1,172 @@
+package com.externalpods.rixy.feature.user.cityselector
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.externalpods.rixy.core.designsystem.components.CityCard
+import com.externalpods.rixy.core.designsystem.components.CityCardSkeleton
+import com.externalpods.rixy.core.designsystem.components.EmptyErrorState
+import com.externalpods.rixy.core.designsystem.components.SearchBar
+import com.externalpods.rixy.core.designsystem.theme.RixyColors
+import com.externalpods.rixy.core.designsystem.theme.RixyTypography
+import com.externalpods.rixy.core.model.City
+import org.koin.androidx.compose.koinViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CitySelectorScreen(
+    onCitySelected: (City) -> Unit,
+    viewModel: CitySelectorViewModel = koinViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "Selecciona tu ciudad",
+                        style = RixyTypography.H4
+                    )
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+        ) {
+            // Search bar
+            SearchBar(
+                query = uiState.searchQuery,
+                onQueryChange = viewModel::onSearchQueryChange,
+                onSearch = { /* Already filtering on query change */ },
+                placeholder = "Buscar ciudad...",
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            // Content
+            when {
+                uiState.isLoading -> {
+                    CitiesLoadingState()
+                }
+                uiState.error != null -> {
+                    EmptyErrorState(
+                        message = uiState.error ?: "Error desconocido",
+                        onRetry = viewModel::loadCities,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                uiState.filteredCities.isEmpty() -> {
+                    EmptyCitiesState(query = uiState.searchQuery)
+                }
+                else -> {
+                    CitiesGrid(
+                        cities = uiState.filteredCities,
+                        onCitySelected = { city ->
+                            viewModel.onCitySelected(city)
+                            onCitySelected(city)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CitiesGrid(
+    cities: List<City>,
+    onCitySelected: (City) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(cities, key = { it.id }) { city ->
+            CityCard(
+                name = city.name,
+                imageUrl = city.heroImageUrl,
+                listingCount = city.listingCount,
+                onClick = { onCitySelected(city) }
+            )
+        }
+    }
+}
+
+@Composable
+private fun CitiesLoadingState(
+    modifier: Modifier = Modifier
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        items(6) {
+            CityCardSkeleton()
+        }
+    }
+}
+
+@Composable
+private fun EmptyCitiesState(
+    query: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(32.dp)
+        ) {
+            Text(
+                text = "☹\uFE0F",
+                style = RixyTypography.H1
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = if (query.isEmpty()) {
+                    "No hay ciudades disponibles"
+                } else {
+                    "No se encontraron ciudades para \"$query\""
+                },
+                style = RixyTypography.H4,
+                color = RixyColors.TextPrimary,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}

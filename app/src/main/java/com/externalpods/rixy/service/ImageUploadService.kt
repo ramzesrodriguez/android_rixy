@@ -24,7 +24,7 @@ sealed class UploadError : Exception() {
     data class InvalidResponse(override val message: String = "Respuesta inválida del servidor") : UploadError()
     data class UploadFailed(override val message: String = "Error al subir la imagen") : UploadError()
     data class CompressionFailed(override val message: String = "Error al comprimir la imagen") : UploadError()
-    data class NetworkError(override val cause: Throwable) : UploadError(), IOException() {
+    data class NetworkError(override val cause: Throwable) : UploadError() {
         override val message: String = "Error de red: ${cause.message ?: "Unknown error"}"
     }
 }
@@ -51,7 +51,7 @@ class ImageUploadService(
         const val DEFAULT_COMPRESSION_QUALITY = 80
         const val MAX_WIDTH = 2048
         const val MAX_HEIGHT = 2048
-        const val MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024 // 5MB
+        const val MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024L // 5MB
     }
 
     /**

@@ -1,7 +1,5 @@
 package com.externalpods.rixy.core.common
 
-import java.io.IOException
-
 /**
  * Sealed class representing API errors with specific cases.
  * Equivalent to iOS APIError enum for robust error handling.
@@ -61,7 +59,7 @@ sealed class ApiError : Exception() {
     data class NetworkError(
         override val cause: Throwable,
         override val message: String = "Network error: ${cause.message ?: "Unknown error"}"
-    ) : ApiError(), IOException() {
+    ) : ApiError() {
         override val httpCode: Int? = null
     }
     
@@ -74,7 +72,7 @@ sealed class ApiError : Exception() {
     
     data class TimeoutError(
         override val message: String = "Request timed out"
-    ) : ApiError(), IOException() {
+    ) : ApiError() {
         override val httpCode: Int? = null
     }
     
@@ -105,7 +103,7 @@ sealed class ApiError : Exception() {
         fun fromThrowable(throwable: Throwable): ApiError = when (throwable) {
             is ApiError -> throwable
             is java.net.SocketTimeoutException -> TimeoutError()
-            is java.net.UnknownHostException -> NetworkError(throwable, "No internet connection")
+            is java.net.UnknownHostException -> NetworkError(throwable)
             is java.io.IOException -> NetworkError(throwable)
             else -> UnknownError(throwable)
         }

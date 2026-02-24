@@ -25,7 +25,8 @@ data class Business(
     @SerialName("moderated_at") val moderatedAt: String? = null,
     @SerialName("created_at") val createdAt: String? = null,
     @SerialName("updated_at") val updatedAt: String? = null,
-    val city: CitySummary? = null
+    val city: CitySummary? = null,
+    @SerialName("owner_name") val ownerName: String? = null
 )
 
 @Serializable

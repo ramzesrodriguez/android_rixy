@@ -181,7 +181,7 @@ class OwnerRepositoryImpl(
     }
 
     override suspend fun deleteListing(listingId: String) {
-        return try {
+        try {
             val response = ownerApi.deleteListing(listingId)
             if (!response.isSuccessful) {
                 throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())
@@ -206,7 +206,7 @@ class OwnerRepositoryImpl(
     }
 
     override suspend fun addFavorite(listingId: String) {
-        return try {
+        try {
             val response = ownerApi.addFavorite(FavoriteRequest(listingId))
             if (!response.isSuccessful) {
                 throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())
@@ -217,7 +217,7 @@ class OwnerRepositoryImpl(
     }
 
     override suspend fun removeFavorite(listingId: String) {
-        return try {
+        try {
             val response = ownerApi.removeFavorite(listingId)
             if (!response.isSuccessful) {
                 throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())
@@ -282,7 +282,7 @@ class OwnerRepositoryImpl(
     }
 
     override suspend fun cancelFeaturedCheckout(listingId: String) {
-        return try {
+        try {
             val response = ownerApi.cancelFeaturedCheckout(listingId)
             if (!response.isSuccessful) {
                 throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())
@@ -306,7 +306,7 @@ class OwnerRepositoryImpl(
     }
 
     override suspend fun confirmFeaturedPayment(listingId: String) {
-        return try {
+        try {
             val response = ownerApi.confirmFeaturedPayment(listingId)
             if (!response.isSuccessful) {
                 throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())
@@ -357,7 +357,7 @@ class OwnerRepositoryImpl(
     }
 
     override suspend fun deleteBusinessSection(sectionId: String) {
-        return try {
+        try {
             val response = ownerApi.deleteBusinessSection(sectionId)
             if (!response.isSuccessful) {
                 throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())
@@ -468,7 +468,7 @@ class OwnerRepositoryImpl(
     }
 
     override suspend fun confirmCitySlotPayment(subscriptionId: String) {
-        return try {
+        try {
             val response = ownerApi.confirmCitySlotPayment(subscriptionId)
             if (!response.isSuccessful) {
                 throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())
@@ -479,7 +479,7 @@ class OwnerRepositoryImpl(
     }
 
     override suspend fun cancelCitySlot(subscriptionId: String, reasonCode: String?, note: String?) {
-        return try {
+        try {
             val cancelRequest = CancelSlotRequest(reasonCode ?: "OWNER_CANCELED", note)
             val response = ownerApi.cancelCitySlot(subscriptionId, cancelRequest)
             if (!response.isSuccessful) {

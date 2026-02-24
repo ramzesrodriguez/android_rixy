@@ -56,6 +56,8 @@ enum class ListingStatus {
     @SerialName("DRAFT") DRAFT,
     @SerialName("PENDING_REVIEW") PENDING_REVIEW,
     @SerialName("PUBLISHED") PUBLISHED,
+    @SerialName("SCHEDULED") SCHEDULED,
+    @SerialName("EXPIRED") EXPIRED,
     @SerialName("REJECTED") REJECTED,
     @SerialName("SUSPENDED") SUSPENDED
 }
@@ -198,14 +200,6 @@ enum class CitySlotType {
 }
 
 @Serializable
-enum class PaymentStatus {
-    @SerialName("PENDING") PENDING,
-    @SerialName("PAID") PAID,
-    @SerialName("FAILED") FAILED,
-    @SerialName("CANCELED") CANCELED
-}
-
-@Serializable
 enum class CitySectionType {
     @SerialName("CITY_HERO_SPOTLIGHT") CITY_HERO_SPOTLIGHT,
     @SerialName("CITY_CATEGORY_RAIL") CITY_CATEGORY_RAIL,
@@ -235,4 +229,22 @@ enum class ModerationAction {
     @SerialName("APPROVE") APPROVE,
     @SerialName("REJECT") REJECT,
     @SerialName("SUSPEND") SUSPEND
+}
+
+@Serializable
+enum class ModerationStatus {
+    @SerialName("PENDING") PENDING,
+    @SerialName("APPROVED") APPROVED,
+    @SerialName("REJECTED") REJECTED,
+    @SerialName("SUSPENDED") SUSPENDED,
+    @SerialName("FLAGGED") FLAGGED
+}
+
+@Serializable
+enum class PaymentStatus {
+    @SerialName("PENDING") PENDING,
+    @SerialName("COMPLETED") COMPLETED,
+    @SerialName("FAILED") FAILED,
+    @SerialName("REFUNDED") REFUNDED,
+    @SerialName("CANCELLED") CANCELLED
 }

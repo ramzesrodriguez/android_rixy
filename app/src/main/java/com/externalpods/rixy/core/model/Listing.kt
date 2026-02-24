@@ -23,7 +23,8 @@ data class Listing(
     @SerialName("service_details") val serviceDetails: ServiceDetails? = null,
     @SerialName("event_details") val eventDetails: EventDetails? = null,
     val business: BusinessSummary? = null,
-    @SerialName("payment_transactions") val paymentTransactions: List<PaymentTransaction>? = null
+    @SerialName("payment_transactions") val paymentTransactions: List<PaymentTransaction>? = null,
+    @SerialName("is_featured") val isFeatured: Boolean? = null
 )
 
 @Serializable
