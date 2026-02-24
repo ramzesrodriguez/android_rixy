@@ -3,6 +3,7 @@ package com.externalpods.rixy.core.network.dto
 import com.externalpods.rixy.core.model.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonElement
 
 // --- Analytics ---
 
@@ -244,7 +245,7 @@ data class CreateCitySectionRequest(
     val subtitle: String? = null,
     val type: CitySectionType,
     val order: Int = 0,
-    @SerialName("config_json") val configJson: Map<String, kotlinx.serialization.json.JsonElement>? = null
+    @SerialName("config_json") val configJson: Map<String, JsonElement>? = null
 )
 
 @Serializable
@@ -253,7 +254,7 @@ data class UpdateCitySectionRequest(
     val subtitle: String? = null,
     val order: Int? = null,
     @SerialName("is_active") val isActive: Boolean? = null,
-    @SerialName("config_json") val configJson: Map<String, kotlinx.serialization.json.JsonElement>? = null
+    @SerialName("config_json") val configJson: Map<String, JsonElement>? = null
 )
 
 @Serializable

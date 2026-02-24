@@ -26,6 +26,7 @@ import org.koin.androidx.compose.koinViewModel
 fun FavoritesScreen(
     onListingClick: (Listing) -> Unit,
     onBackClick: () -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: FavoritesViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

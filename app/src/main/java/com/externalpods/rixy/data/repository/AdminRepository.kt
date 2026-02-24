@@ -8,8 +8,12 @@ import com.externalpods.rixy.core.network.dto.*
 interface AdminRepository {
     // Cities
     suspend fun getAllCities(): List<City>
+    suspend fun getCities(): List<City> // Alias for getAllCities
     suspend fun createCity(request: CreateCityRequest): City
+    suspend fun createCity(name: String, slug: String): City // Convenience method
     suspend fun updateCity(cityId: String, request: UpdateCityRequest): City
+    suspend fun updateCity(id: String, name: String, slug: String): City // Convenience method
+    suspend fun updateCityStatus(id: String, isActive: Boolean): City
     
     // City Sections
     suspend fun getCitySections(cityId: String? = null): List<CitySection>
@@ -31,6 +35,7 @@ interface AdminRepository {
     // Users
     suspend fun getUsers(): List<Owner>
     suspend fun updateUserRole(userId: String, role: OwnerRole): Owner
+    suspend fun suspendUser(userId: String): Owner
     
     // Featured
     suspend fun getAllFeaturedPlacements(): List<FeaturedPlacement>
@@ -70,6 +75,8 @@ class AdminRepositoryImpl(
         }
     }
 
+    override suspend fun getCities(): List<City> = getAllCities() // Alias
+
     override suspend fun createCity(request: CreateCityRequest): City {
         return try {
             val response = adminApi.createCity(request)
@@ -83,6 +90,11 @@ class AdminRepositoryImpl(
         }
     }
 
+    override suspend fun createCity(name: String, slug: String): City {
+        // TODO: Implement API call for creating city with individual parameters
+        return createCity(CreateCityRequest(name = name, slug = slug))
+    }
+
     override suspend fun updateCity(cityId: String, request: UpdateCityRequest): City {
         return try {
             val response = adminApi.updateCity(cityId, request)
@@ -94,6 +106,16 @@ class AdminRepositoryImpl(
         } catch (e: Exception) {
             throw ApiError.fromThrowable(e)
         }
+    }
+
+    override suspend fun updateCity(id: String, name: String, slug: String): City {
+        // TODO: Implement API call for updating city with individual parameters
+        return updateCity(id, UpdateCityRequest(name = name, slug = slug))
+    }
+
+    override suspend fun updateCityStatus(id: String, isActive: Boolean): City {
+        // TODO: Implement API call for updating city status
+        return updateCity(id, UpdateCityRequest(isActive = isActive))
     }
 
     // City Sections
@@ -265,6 +287,11 @@ class AdminRepositoryImpl(
         } catch (e: Exception) {
             throw ApiError.fromThrowable(e)
         }
+    }
+
+    override suspend fun suspendUser(userId: String): Owner {
+        // TODO: Implement API call for suspending user
+        throw NotImplementedError("suspendUser not yet implemented")
     }
 
     // Featured

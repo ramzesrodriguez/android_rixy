@@ -582,7 +582,7 @@ private fun ProductDetailsForm(
         // Price
         RixyTextField(
             value = uiState.productPrice,
-            onValueChange = { viewModel._uiState.update { it.copy(productPrice = it.productPrice) } },
+            onValueChange = { viewModel.onProductPriceChange(it) },
             label = "Precio",
             placeholder = "0.00",
             modifier = Modifier.fillMaxWidth()

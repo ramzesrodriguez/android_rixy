@@ -1,3 +1,159 @@
 <resources>
     <string name="app_name">Rixy</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Inicio</string>
+    <string name="nav_search">Buscar</string>
+    <string name="nav_favorites">Favoritos</string>
+    <string name="nav_orders">Pedidos</string>
+    <string name="nav_profile">Perfil</string>
+    
+    <!-- Auth -->
+    <string name="auth_login">Iniciar Sesión</string>
+    <string name="auth_register">Crear Cuenta</string>
+    <string name="auth_email">Correo electrónico</string>
+    <string name="auth_password">Contraseña</string>
+    <string name="auth_name">Nombre completo</string>
+    <string name="auth_phone">Teléfono</string>
+    <string name="auth_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="auth_no_account">¿No tienes cuenta? Regístrate</string>
+    <string name="auth_has_account">¿Ya tienes cuenta? Inicia sesión</string>
+    <string name="auth_logout">Cerrar sesión</string>
+    <string name="auth_logout_confirm">¿Estás seguro de que deseas cerrar sesión?</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_general">General</string>
+    <string name="settings_profile">Perfil</string>
+    <string name="settings_profile_subtitle">Editar información</string>
+    <string name="settings_business">Mi Negocio</string>
+    <string name="settings_business_subtitle">Gestionar negocio</string>
+    <string name="settings_support">Soporte</string>
+    <string name="settings_help">Centro de ayuda</string>
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_version">Versión %1$s</string>
+    <string name="settings_account">Cuenta</string>
+    <string name="settings_mode_user">Usuario</string>
+    <string name="settings_mode_user_subtitle">Explorar anuncios y negocios</string>
+    <string name="settings_mode_owner">Propietario</string>
+    <string name="settings_mode_owner_subtitle">Gestionar negocio y anuncios</string>
+    <string name="settings_mode_admin">Administrador</string>
+    <string name="settings_mode_admin_subtitle">Gestionar plataforma</string>
+    
+    <!-- Common Actions -->
+    <string name="action_save">Guardar</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="action_delete">Eliminar</string>
+    <string name="action_edit">Editar</string>
+    <string name="action_create">Crear</string>
+    <string name="action_confirm">Confirmar</string>
+    <string name="action_back">Regresar</string>
+    <string name="action_search">Buscar</string>
+    <string name="action_filter">Filtrar</string>
+    <string name="action_clear">Limpiar</string>
+    <string name="action_retry">Reintentar</string>
+    <string name="action_close">Cerrar</string>
+    
+    <!-- Common Labels -->
+    <string name="label_name">Nombre</string>
+    <string name="label_description">Descripción</string>
+    <string name="label_price">Precio</string>
+    <string name="label_category">Categoría</string>
+    <string name="label_address">Dirección</string>
+    <string name="label_phone">Teléfono</string>
+    <string name="label_whatsapp">WhatsApp</string>
+    <string name="label_website">Sitio Web</string>
+    <string name="label_email">Correo</string>
+    <string name="label_required">* Obligatorio</string>
+    
+    <!-- Empty States -->
+    <string name="empty_no_results">No se encontraron resultados</string>
+    <string name="empty_no_favorites">No tienes favoritos</string>
+    <string name="empty_no_favorites_login">Inicia sesión para guardar tus favoritos</string>
+    <string name="empty_no_orders">No tienes pedidos aún</string>
+    <string name="empty_no_orders_subtitle">Tus compras aparecerán aquí</string>
+    <string name="empty_no_orders_login">Inicia sesión para ver tus pedidos</string>
+    <string name="login_required">Inicio de sesión requerido</string>
+    <string name="login_required_message">Inicia sesión para acceder a esta función</string>
+    <string name="empty_no_listings">No hay anuncios</string>
+    <string name="empty_error">Algo salió mal</string>
+    <string name="empty_try_again">Intenta de nuevo</string>
+    
+    <!-- City Selector -->
+    <string name="city_selector_title">Selecciona tu ciudad</string>
+    <string name="city_selector_search">Buscar ciudad...</string>
+    <string name="city_selector_popular">Ciudades populares</string>
+    
+    <!-- Owner Dashboard -->
+    <string name="owner_dashboard_title">Mi Negocio</string>
+    <string name="owner_dashboard_analytics">Estadísticas</string>
+    <string name="owner_dashboard_listings">Mis Anuncios</string>
+    <string name="owner_dashboard_create_listing">Crear Anuncio</string>
+    <string name="owner_dashboard_edit_business">Editar Negocio</string>
+    <string name="owner_dashboard_featured">Destacados</string>
+    <string name="owner_dashboard_slots">Espacios Ciudad</string>
+    
+    <!-- Business Editor -->
+    <string name="business_editor_title_create">Crear Negocio</string>
+    <string name="business_editor_title_edit">Editar Negocio</string>
+    <string name="business_editor_info">Información del Negocio</string>
+    <string name="business_editor_contact">Información de Contacto</string>
+    <string name="business_editor_online">Presencia Online</string>
+    <string name="business_editor_hours">Horario de Atención</string>
+    <string name="business_editor_logo">Logo</string>
+    <string name="business_editor_header">Imagen de portada</string>
+    <string name="business_editor_add_logo">Agregar logo</string>
+    <string name="business_editor_add_header">Agregar imagen de portada</string>
+    <string name="business_editor_change_image">Cambiar imagen</string>
+    <string name="business_editor_name_hint">Ej: Mi Tienda</string>
+    <string name="business_editor_description_hint">Describe tu negocio...</string>
+    <string name="business_editor_address_hint">Calle, número, colonia...</string>
+    <string name="business_editor_phone_hint">(55) 1234-5678</string>
+    <string name="business_editor_whatsapp_hint">+52 55 1234 5678</string>
+    <string name="business_editor_website_hint">https://mitienda.com</string>
+    <string name="business_editor_hours_hint">Lun-Vie: 9am-6pm, Sab: 10am-4pm</string>
+    
+    <!-- Listing Editor -->
+    <string name="listing_editor_title_create">Crear Anuncio</string>
+    <string name="listing_editor_title_edit">Editar Anuncio</string>
+    <string name="listing_editor_step_type">Tipo</string>
+    <string name="listing_editor_step_basic">Básico</string>
+    <string name="listing_editor_step_details">Detalles</string>
+    <string name="listing_editor_type_product">Producto</string>
+    <string name="listing_editor_type_service">Servicio</string>
+    <string name="listing_editor_type_event">Evento</string>
+    <string name="listing_editor_photos">Fotos</string>
+    <string name="listing_editor_add_photos">Agregar fotos</string>
+    <string name="listing_editor_title_hint">Ej: iPhone 13 Pro Max 256GB</string>
+    <string name="listing_editor_description_hint">Describe tu producto o servicio...</string>
+    <string name="listing_editor_category_hint">Ej: Electrónica, Servicios, etc.</string>
+    <string name="listing_editor_stock">Cantidad en stock</string>
+    <string name="listing_editor_duration">Duración (minutos)</string>
+    <string name="listing_editor_start_date">Fecha de inicio</string>
+    <string name="listing_editor_venue">Lugar</string>
+    <string name="listing_editor_venue_hint">Nombre del venue</string>
+    
+    <!-- Admin -->
+    <string name="admin_dashboard_title">Panel Admin</string>
+    <string name="admin_moderation">Moderación</string>
+    <string name="admin_cities">Ciudades</string>
+    <string name="admin_users">Usuarios</string>
+    <string name="admin_audit">Logs</string>
+    <string name="admin_pending_listings">Anuncios pendientes</string>
+    <string name="admin_pending_businesses">Negocios pendientes</string>
+    
+    <!-- Payment -->
+    <string name="payment_confirming">Confirmando pago...</string>
+    <string name="payment_verifying">Verificando pago...</string>
+    <string name="payment_success">¡Pago confirmado exitosamente!</string>
+    <string name="payment_timeout">El pago está siendo procesado. Verifica más tarde.</string>
+    <string name="payment_cancelled">Pago cancelado</string>
+    <string name="payment_error">Error al procesar el pago</string>
+    
+    <!-- Errors -->
+    <string name="error_generic">Algo salió mal. Intenta de nuevo.</string>
+    <string name="error_network">Error de conexión. Verifica tu internet.</string>
+    <string name="error_unauthorized">Sesión expirada. Inicia sesión de nuevo.</string>
+    <string name="error_not_found">No encontrado</string>
+    <string name="error_validation">Verifica los datos ingresados</string>
 </resources>

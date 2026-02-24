@@ -26,25 +26,23 @@ import com.externalpods.rixy.feature.user.cityselector.CitySelectorScreen
 import com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreen
 import com.externalpods.rixy.feature.user.main.UserTabBar
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun RixyNavGraph(
-    appState: AppState = koinViewModel(),
+    appState: AppState = koinInject(),
     navController: NavHostController = rememberNavController()
 ) {
     val currentMode by appState.currentMode.collectAsStateWithLifecycle()
     val isAuthenticated by appState.isAuthenticated.collectAsStateWithLifecycle()
     val selectedCity by appState.selectedCity.collectAsStateWithLifecycle()
     
+    // Allow browsing without login (e-commerce style)
     val startDestination = when {
-        !isAuthenticated -> Screen.Login
-        selectedCity == null -> Screen.CitySelector
-        else -> when (currentMode) {
-            AppMode.USER -> Screen.UserMain
-            AppMode.OWNER -> Screen.OwnerDashboard
-            AppMode.ADMIN -> Screen.AdminDashboard
-            else -> Screen.CitySelector
-        }
+        // If city selected, go to main flow
+        selectedCity != null -> Screen.UserMain
+        // Otherwise start with city selector
+        else -> Screen.CitySelector
     }
     
     NavHost(navController = navController, startDestination = startDestination) {
@@ -75,9 +73,16 @@ fun RixyNavGraph(
             val city = selectedCity ?: City(id = "", name = "Ciudad", slug = "")
             UserTabBar(
                 city = city,
+                isAuthenticated = isAuthenticated,
                 onListingClick = { navController.navigate(Screen.ListingDetail(it.id)) },
-                onNavigateToLogin = { navController.navigate(Screen.Login) { popUpTo(0) { inclusive = true } } },
-                onModeChanged = { navController.navigate(Screen.OwnerDashboard) { popUpTo(0) { inclusive = true } } }
+                onNavigateToLogin = { navController.navigate(Screen.Login) },
+                onModeChanged = { 
+                    if (isAuthenticated) {
+                        navController.navigate(Screen.OwnerDashboard) { popUpTo(0) { inclusive = true } }
+                    } else {
+                        navController.navigate(Screen.Login)
+                    }
+                }
             )
         }
         composable<Screen.ListingDetail> { backStackEntry ->

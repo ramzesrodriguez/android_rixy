@@ -5,7 +5,7 @@ import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -72,7 +72,7 @@ fun RixyTextField(
         onValueChange = onValueChange,
         modifier = modifier
             .fillMaxWidth()
-            .height(RixyDimensions.InputHeight),
+            .heightIn(min = 56.dp),
         placeholder = placeholder?.let { { Text(it, style = RixyTypography.Body) } },
         label = label?.let { { Text(it) } },
         leadingIcon = leadingIcon?.let {

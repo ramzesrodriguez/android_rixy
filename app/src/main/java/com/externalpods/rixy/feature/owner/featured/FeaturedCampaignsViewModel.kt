@@ -3,6 +3,7 @@ package com.externalpods.rixy.feature.owner.featured
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.externalpods.rixy.core.model.FeaturedPlacement
+import com.externalpods.rixy.core.model.FeaturedPlacementStatus
 import com.externalpods.rixy.data.repository.OwnerRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,7 +17,13 @@ data class FeaturedCampaignsUiState(
     val isCreatingCheckout: Boolean = false,
     val error: String? = null,
     val checkoutUrl: String? = null
-)
+) {
+    // Computed properties for UI
+    val activePlacements: List<FeaturedPlacement> 
+        get() = placements.filter { it.status == FeaturedPlacementStatus.ACTIVE }
+    val availablePlacements: List<FeaturedPlacement> 
+        get() = placements.filter { it.status == FeaturedPlacementStatus.PENDING || it.status == FeaturedPlacementStatus.EXPIRED }
+}
 
 class FeaturedCampaignsViewModel(
     private val ownerRepository: OwnerRepository
@@ -85,5 +92,27 @@ class FeaturedCampaignsViewModel(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun initiateCheckout(placement: FeaturedPlacement) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCreatingCheckout = true, error = null) }
+            
+            try {
+                val checkout = ownerRepository.createFeaturedCheckout(placement.listingId)
+                checkout.checkoutUrl?.let { url ->
+                    _uiState.update { it.copy(checkoutUrl = url, isCreatingCheckout = false) }
+                } ?: run {
+                    _uiState.update { it.copy(isCreatingCheckout = false, error = "No checkout URL received") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(
+                        isCreatingCheckout = false,
+                        error = e.message
+                    )
+                }
+            }
+        }
     }
 }

@@ -3,7 +3,9 @@ package com.externalpods.rixy.feature.owner.cityslots
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.externalpods.rixy.core.model.CitySlotSubscription
+import com.externalpods.rixy.core.model.CitySlotType
 import com.externalpods.rixy.data.repository.OwnerRepository
+import com.externalpods.rixy.core.model.CitySlot
 import com.externalpods.rixy.navigation.AppState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,8 +13,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+data class AvailableSlot(
+    val cityId: String,
+    val cityName: String,
+    val type: CitySlotType,
+    val slotIndex: Int,
+    val basePriceCents: Int,
+    val currency: String
+)
+
 data class OwnerCitySlotsUiState(
     val subscriptions: List<CitySlotSubscription> = emptyList(),
+    val availableSlots: List<AvailableSlot> = emptyList(), // Available slots for purchase
     val isLoading: Boolean = false,
     val isCreatingCheckout: Boolean = false,
     val error: String? = null,
@@ -83,5 +95,33 @@ class OwnerCitySlotsViewModel(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun purchaseSlot(slot: AvailableSlot, listingId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCreatingCheckout = true, error = null) }
+            
+            try {
+                val citySlot = CitySlot(
+                    cityId = slot.cityId,
+                    type = slot.type,
+                    slotIndex = slot.slotIndex,
+                    listingId = listingId
+                )
+                val response = ownerRepository.purchaseSlot(citySlot)
+                response.checkoutUrl?.let { url ->
+                    _uiState.update { it.copy(checkoutUrl = url, isCreatingCheckout = false) }
+                } ?: run {
+                    _uiState.update { it.copy(isCreatingCheckout = false, error = "No checkout URL received") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(
+                        isCreatingCheckout = false,
+                        error = e.message
+                    )
+                }
+            }
+        }
     }
 }

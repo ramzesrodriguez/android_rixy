@@ -39,7 +39,7 @@ val featureModule = module {
     // Owner Mode
     viewModel { OwnerDashboardViewModel(get(), get()) }
     viewModel { BusinessEditorViewModel(get(), get()) }
-    viewModel { params -> ListingEditorViewModel(get(), get(), params.getOrNull()) }
+    viewModel { params -> ListingEditorViewModel(get(), get(), params.getOrNull<String>()) }
     viewModel { FeaturedCampaignsViewModel(get()) }
     viewModel { OwnerCitySlotsViewModel(get(), get()) }
     

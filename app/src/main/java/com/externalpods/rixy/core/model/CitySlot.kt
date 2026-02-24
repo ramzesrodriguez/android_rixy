@@ -29,6 +29,9 @@ data class CitySlotSubscription(
     val isPaused: Boolean get() = status == CitySlotStatus.PAUSED
     val isExpiringSoon: Boolean get() = (daysRemaining ?: 0) <= 3 && (daysRemaining ?: 0) > 0
     val formattedPrice: String get() = "${amountCents / 100.0} $currency"
+    
+    // Helper property for city name
+    val cityName: String get() = city?.name ?: "Unknown City"
 }
 
 @Serializable
@@ -154,6 +157,14 @@ data class SlotTypeAvailability(
     val isConfigured: Boolean get() = !unconfigured && basePriceCents > 0
     val occupancyRate: Float get() = if (totalSlots > 0) occupiedIndices.size.toFloat() / totalSlots else 0f
 }
+
+// CitySlot model for purchase flow (defined separately for repository use)
+data class CitySlot(
+    val cityId: String,
+    val type: CitySlotType,
+    val slotIndex: Int,
+    val listingId: String? = null
+)
 
 @Serializable
 data class CitySlotCheckoutResponse(

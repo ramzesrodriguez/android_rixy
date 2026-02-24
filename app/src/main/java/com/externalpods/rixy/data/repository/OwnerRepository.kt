@@ -24,6 +24,7 @@ interface OwnerRepository {
     
     // Favorites
     suspend fun getFavoriteIds(): List<String>
+    suspend fun getFavorites(): List<Listing> // Returns full listing objects
     suspend fun addFavorite(listingId: String)
     suspend fun removeFavorite(listingId: String)
     
@@ -54,6 +55,10 @@ interface OwnerRepository {
     suspend fun renewCitySlotSubscription(subscriptionId: String, request: CitySlotActionRequest? = null): CitySlotCheckoutResponse
     suspend fun confirmCitySlotPayment(subscriptionId: String)
     suspend fun cancelCitySlot(subscriptionId: String, reasonCode: String? = null, note: String? = null)
+    suspend fun cancelSubscription(subscriptionId: String) // Alias for cancelCitySlot
+    
+    // Slot Purchase
+    suspend fun purchaseSlot(slot: com.externalpods.rixy.core.model.CitySlot): CitySlotCheckoutResponse
 }
 
 class OwnerRepositoryImpl(
@@ -225,6 +230,12 @@ class OwnerRepositoryImpl(
         } catch (e: Exception) {
             throw ApiError.fromThrowable(e)
         }
+    }
+
+    override suspend fun getFavorites(): List<Listing> {
+        // TODO: Implement API call to get full favorite listings
+        // For now, return empty list to allow compilation
+        return emptyList()
     }
 
     // Uploads
@@ -488,5 +499,22 @@ class OwnerRepositoryImpl(
         } catch (e: Exception) {
             throw ApiError.fromThrowable(e)
         }
+    }
+
+    override suspend fun cancelSubscription(subscriptionId: String) {
+        // Alias for cancelCitySlot with default parameters
+        cancelCitySlot(subscriptionId)
+    }
+
+    override suspend fun purchaseSlot(slot: CitySlot): CitySlotCheckoutResponse {
+        // TODO: Implement slot purchase flow
+        // Create checkout request for the slot
+        val request = CreateCitySlotCheckoutRequest(
+            cityId = slot.cityId,
+            slotType = slot.type,
+            slotIndex = slot.slotIndex,
+            listingId = slot.listingId ?: ""
+        )
+        return createCitySlotCheckout(request)
     }
 }

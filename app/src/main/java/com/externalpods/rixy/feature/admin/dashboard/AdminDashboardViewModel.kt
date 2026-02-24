@@ -13,9 +13,13 @@ data class AdminDashboardUiState(
     val pendingListingsCount: Int = 0,
     val pendingBusinessesCount: Int = 0,
     val totalUsers: Int = 0,
+    val monthlyRevenue: Int = 0,
     val isLoading: Boolean = false,
     val error: String? = null
-)
+) {
+    // Computed property for total pending moderation
+    val pendingModerationCount: Int get() = pendingListingsCount + pendingBusinessesCount
+}
 
 class AdminDashboardViewModel(
     private val adminRepository: AdminRepository

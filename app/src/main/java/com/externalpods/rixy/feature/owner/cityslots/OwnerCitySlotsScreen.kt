@@ -74,7 +74,7 @@ fun OwnerCitySlotsScreen(
                         items(uiState.availableSlots) { slot ->
                             AvailableSlotCard(
                                 slot = slot,
-                                onPurchase = { viewModel.purchaseSlot(slot) }
+                                onPurchase = { viewModel.purchaseSlot(slot, "") } // TODO: Pass actual listingId
                             )
                             Spacer(Modifier.height(8.dp))
                         }
@@ -115,7 +115,7 @@ private fun SubscriptionCard(
 
 @Composable
 private fun AvailableSlotCard(
-    slot: com.externalpods.rixy.core.model.CitySlot,
+    slot: AvailableSlot,
     onPurchase: () -> Unit
 ) {
     Card(
@@ -127,8 +127,8 @@ private fun AvailableSlotCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(Modifier.weight(1f)) {
-                Text(slot.type?.displayName ?: "Slot", style = RixyTypography.BodyMedium)
-                Text("Index: ${slot.slotIndex}", style = RixyTypography.Caption, color = RixyColors.TextSecondary)
+                Text(slot.type.displayName, style = RixyTypography.BodyMedium)
+                Text("${slot.cityName} - Index: ${slot.slotIndex}", style = RixyTypography.Caption, color = RixyColors.TextSecondary)
             }
             RixyButton(
                 text = "Comprar",

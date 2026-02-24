@@ -51,6 +51,7 @@ fun BrowseListingsScreen(
     initialType: ListingType? = null,
     onBackClick: () -> Unit,
     onListingClick: (Listing) -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: BrowseListingsViewModel = koinViewModel { 
         parametersOf(cityId, initialType?.name) 
     }

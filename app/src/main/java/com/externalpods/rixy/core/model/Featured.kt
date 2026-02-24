@@ -16,5 +16,14 @@ data class FeaturedPlacement(
     val listing: ListingSummary? = null,
     val city: CitySummary? = null,
     @SerialName("queue_position") val queuePosition: Int? = null,
-    @SerialName("payment_transactions") val paymentTransactions: List<PaymentTransaction>? = null
-)
+    @SerialName("payment_transactions") val paymentTransactions: List<PaymentTransaction>? = null,
+    // Additional fields for UI compatibility
+    @SerialName("listing_title") val listingTitle: String? = null,
+    @SerialName("amount_cents") val amountCents: Int? = null,
+    val currency: String? = null,
+    @SerialName("slot_type") val slotType: CitySlotType? = null,
+    @SerialName("base_price_cents") val basePriceCents: Int? = null
+) {
+    // Helper computed properties
+    val displayTitle: String get() = listingTitle ?: listing?.title ?: "Unknown Listing"
+}

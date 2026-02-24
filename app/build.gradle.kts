@@ -81,7 +81,7 @@ dependencies {
 
     // Supabase Auth
     implementation(libs.supabase.auth)
-    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.okhttp)
 
     // Stripe Payments
     implementation(libs.stripe.android)

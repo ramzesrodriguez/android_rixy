@@ -52,6 +52,7 @@ import org.koin.androidx.compose.koinViewModel
 fun SettingsScreen(
     onNavigateToLogin: () -> Unit,
     onModeChanged: (AppMode) -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()

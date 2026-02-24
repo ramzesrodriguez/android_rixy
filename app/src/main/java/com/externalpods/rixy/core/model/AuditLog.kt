@@ -24,4 +24,7 @@ data class AuditLog(
     val isCreateAction: Boolean get() = action == "CREATE"
     val isUpdateAction: Boolean get() = action == "UPDATE"
     val isDeleteAction: Boolean get() = action == "DELETE"
+    
+    // Alias for actorOwnerId for compatibility
+    val actorId: String get() = actorOwnerId
 }

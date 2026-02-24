@@ -136,6 +136,10 @@ class ListingEditorViewModel(
         _uiState.update { it.copy(category = value) }
     }
 
+    fun onProductPriceChange(value: String) {
+        _uiState.update { it.copy(productPrice = value) }
+    }
+
     fun uploadImage(uri: Uri) {
         viewModelScope.launch {
             _uiState.update { it.copy(isUploadingImage = true) }

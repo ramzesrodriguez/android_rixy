@@ -13,6 +13,8 @@ import io.github.jan.supabase.createSupabaseClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.net.UnknownHostException
+import javax.net.ssl.SSLHandshakeException
 
 sealed class AuthState {
     data object Unauthenticated : AuthState()
@@ -52,8 +54,9 @@ class AuthService(
             _authState.value = AuthState.Authenticated(user)
             Result.success(user)
         } catch (e: Exception) {
-            _authState.value = AuthState.Error(e.message ?: "Sign in failed")
-            Result.failure(e)
+            val readableError = mapAuthError(e)
+            _authState.value = AuthState.Error(readableError)
+            Result.failure(Exception(readableError, e))
         }
     }
 
@@ -73,8 +76,9 @@ class AuthService(
             _authState.value = AuthState.Authenticated(user)
             Result.success(user)
         } catch (e: Exception) {
-            _authState.value = AuthState.Error(e.message ?: "Sign up failed")
-            Result.failure(e)
+            val readableError = mapAuthError(e)
+            _authState.value = AuthState.Error(readableError)
+            Result.failure(Exception(readableError, e))
         }
     }
 
@@ -118,4 +122,17 @@ class AuthService(
     }
 
     fun getCurrentToken(): String? = tokenManager.getToken()
+
+    private fun mapAuthError(error: Throwable): String {
+        return when {
+            error is SSLHandshakeException ||
+                error.message?.contains("Chain validation failed", ignoreCase = true) == true -> {
+                "No se pudo validar el certificado SSL. Verifica la fecha/hora del dispositivo y tu red."
+            }
+            error is UnknownHostException -> {
+                "No hay conexión a internet o el servidor no está disponible."
+            }
+            else -> error.message ?: "Error de autenticación"
+        }
+    }
 }
