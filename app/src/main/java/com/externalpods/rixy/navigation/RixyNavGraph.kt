@@ -9,19 +9,24 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.externalpods.rixy.core.model.AppMode
 import com.externalpods.rixy.core.model.City
+import com.externalpods.rixy.feature.admin.audit.AuditLogsScreen
+import com.externalpods.rixy.feature.admin.cities.CitiesManagementScreen
+import com.externalpods.rixy.feature.admin.dashboard.AdminDashboardScreen
+import com.externalpods.rixy.feature.admin.moderation.ModerationBusinessesScreen
+import com.externalpods.rixy.feature.admin.moderation.ModerationListingsScreen
+import com.externalpods.rixy.feature.admin.users.UsersManagementScreen
 import com.externalpods.rixy.feature.auth.LoginScreen
 import com.externalpods.rixy.feature.auth.RegisterScreen
+import com.externalpods.rixy.feature.owner.business.BusinessEditorScreen
+import com.externalpods.rixy.feature.owner.cityslots.OwnerCitySlotsScreen
 import com.externalpods.rixy.feature.owner.dashboard.OwnerDashboardScreen
-import com.externalpods.rixy.feature.settings.SettingsScreen
-import com.externalpods.rixy.feature.user.browse.BrowseListingsScreen
-import com.externalpods.rixy.feature.user.cityhome.CityHomeScreen
+import com.externalpods.rixy.feature.owner.featured.FeaturedCampaignsScreen
+import com.externalpods.rixy.feature.owner.listings.ListingEditorScreen
 import com.externalpods.rixy.feature.user.cityselector.CitySelectorScreen
 import com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreen
+import com.externalpods.rixy.feature.user.main.UserTabBar
 import org.koin.androidx.compose.koinViewModel
 
-/**
- * Main navigation graph for Rixy app
- */
 @Composable
 fun RixyNavGraph(
     appState: AppState = koinViewModel(),
@@ -31,170 +36,110 @@ fun RixyNavGraph(
     val isAuthenticated by appState.isAuthenticated.collectAsStateWithLifecycle()
     val selectedCity by appState.selectedCity.collectAsStateWithLifecycle()
     
-    // Determine start destination based on state
     val startDestination = when {
         !isAuthenticated -> Screen.Login
         selectedCity == null -> Screen.CitySelector
         else -> when (currentMode) {
-            AppMode.USER -> Screen.CityHome(selectedCity!!.id, selectedCity!!.slug)
+            AppMode.USER -> Screen.UserMain
             AppMode.OWNER -> Screen.OwnerDashboard
             AppMode.ADMIN -> Screen.AdminDashboard
             else -> Screen.CitySelector
         }
     }
     
-    NavHost(
-        navController = navController,
-        startDestination = startDestination
-    ) {
+    NavHost(navController = navController, startDestination = startDestination) {
         // Auth Routes
         composable<Screen.Login> {
             LoginScreen(
-                onNavigateToRegister = {
-                    navController.navigate(Screen.Register)
-                },
-                onLoginSuccess = {
-                    navController.navigate(Screen.CitySelector) {
-                        popUpTo(Screen.Login) { inclusive = true }
-                    }
-                }
+                onNavigateToRegister = { navController.navigate(Screen.Register) },
+                onLoginSuccess = { navController.navigate(Screen.CitySelector) { popUpTo(Screen.Login) { inclusive = true } } }
             )
         }
-        
         composable<Screen.Register> {
             RegisterScreen(
-                onNavigateToLogin = {
-                    navController.popBackStack()
-                },
-                onRegisterSuccess = {
-                    navController.navigate(Screen.CitySelector) {
-                        popUpTo(Screen.Login) { inclusive = true }
-                    }
-                }
+                onNavigateToLogin = { navController.popBackStack() },
+                onRegisterSuccess = { navController.navigate(Screen.CitySelector) { popUpTo(Screen.Login) { inclusive = true } } }
             )
         }
         
-        // User Mode Routes
+        // User Routes
         composable<Screen.CitySelector> {
             CitySelectorScreen(
                 onCitySelected = { city ->
                     appState.selectCity(city)
-                    navController.navigate(Screen.CityHome(city.id, city.slug)) {
-                        popUpTo(Screen.CitySelector) { inclusive = true }
-                    }
+                    navController.navigate(Screen.UserMain) { popUpTo(Screen.CitySelector) { inclusive = true } }
                 }
             )
         }
-        
-        composable<Screen.CityHome> { backStackEntry ->
-            val city = selectedCity ?: City(
-                id = "",
-                name = "Ciudad",
-                slug = ""
-            )
-            
-            CityHomeScreen(
+        composable<Screen.UserMain> {
+            val city = selectedCity ?: City(id = "", name = "Ciudad", slug = "")
+            UserTabBar(
                 city = city,
-                onListingClick = { listing ->
-                    navController.navigate(Screen.ListingDetail(listing.id))
-                },
-                onSeeAllListings = {
-                    navController.navigate(Screen.Browse(cityId = city.id))
-                }
+                onListingClick = { navController.navigate(Screen.ListingDetail(it.id)) },
+                onNavigateToLogin = { navController.navigate(Screen.Login) { popUpTo(0) { inclusive = true } } },
+                onModeChanged = { navController.navigate(Screen.OwnerDashboard) { popUpTo(0) { inclusive = true } } }
             )
         }
-        
         composable<Screen.ListingDetail> { backStackEntry ->
             val listingId = backStackEntry.arguments?.getString("listingId") ?: ""
             ListingDetailScreen(
                 listingId = listingId,
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onBusinessClick = { businessId ->
-                    navController.navigate(Screen.BusinessProfile(businessId))
-                }
+                onBackClick = { navController.popBackStack() },
+                onBusinessClick = {}
             )
         }
         
-        composable<Screen.BusinessProfile> { backStackEntry ->
-            // TODO: Implement BusinessProfileScreen
-            // For now, just go back
-            navController.popBackStack()
-        }
-        
-        composable<Screen.Browse> { backStackEntry ->
-            val cityId = backStackEntry.arguments?.getString("cityId")
-            BrowseListingsScreen(
-                cityId = cityId,
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onListingClick = { listing ->
-                    navController.navigate(Screen.ListingDetail(listing.id))
-                }
-            )
-        }
-        
-        // Owner Mode Routes
+        // Owner Routes
         composable<Screen.OwnerDashboard> {
             OwnerDashboardScreen(
-                onNavigateToBusiness = {
-                    // TODO: Navigate to business editor
-                },
-                onNavigateToListings = {
-                    // TODO: Navigate to listings
-                },
-                onNavigateToFeatured = {
-                    // TODO: Navigate to featured campaigns
-                },
-                onNavigateToCitySlots = {
-                    // TODO: Navigate to city slots
-                },
-                onNavigateToCreateListing = {
-                    // TODO: Navigate to create listing
-                }
+                onNavigateToBusiness = { navController.navigate(Screen.BusinessEditor()) },
+                onNavigateToListings = { navController.navigate(Screen.ListingEditor()) },
+                onNavigateToFeatured = { navController.navigate(Screen.FeaturedCampaigns) },
+                onNavigateToCitySlots = { navController.navigate(Screen.CitySlots) },
+                onNavigateToCreateListing = { navController.navigate(Screen.ListingEditor()) }
             )
         }
+        composable<Screen.BusinessEditor> {
+            BusinessEditorScreen(
+                onBackClick = { navController.popBackStack() },
+                onSaveSuccess = { navController.popBackStack() }
+            )
+        }
+        composable<Screen.ListingEditor> { backStackEntry ->
+            val listingId = backStackEntry.arguments?.getString("listingId")
+            ListingEditorScreen(
+                listingId = listingId,
+                onBackClick = { navController.popBackStack() },
+                onSaveSuccess = { navController.popBackStack() }
+            )
+        }
+        composable<Screen.FeaturedCampaigns> {
+            FeaturedCampaignsScreen(onBackClick = { navController.popBackStack() })
+        }
+        composable<Screen.CitySlots> {
+            OwnerCitySlotsScreen(onBackClick = { navController.popBackStack() })
+        }
         
-        // Admin Mode Routes
+        // Admin Routes
         composable<Screen.AdminDashboard> {
-            // TODO: Implement AdminDashboardScreen
-            // For now, show a placeholder
-            androidx.compose.material3.Text("Admin Dashboard - Not implemented yet")
-        }
-        
-        // Common Routes
-        composable<Screen.Settings> {
-            SettingsScreen(
-                onNavigateToLogin = {
-                    navController.navigate(Screen.Login) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                },
-                onModeChanged = { mode ->
-                    when (mode) {
-                        AppMode.USER -> {
-                            selectedCity?.let { city ->
-                                navController.navigate(Screen.CityHome(city.id, city.slug)) {
-                                    popUpTo(0) { inclusive = true }
-                                }
-                            }
-                        }
-                        AppMode.OWNER -> {
-                            navController.navigate(Screen.OwnerDashboard) {
-                                popUpTo(0) { inclusive = true }
-                            }
-                        }
-                        AppMode.ADMIN -> {
-                            navController.navigate(Screen.AdminDashboard) {
-                                popUpTo(0) { inclusive = true }
-                            }
-                        }
-                        else -> {}
-                    }
-                }
+            AdminDashboardScreen(
+                onNavigateToModeration = { navController.navigate(Screen.Moderation) },
+                onNavigateToCities = { navController.navigate(Screen.CitiesManagement) },
+                onNavigateToUsers = { navController.navigate(Screen.UsersManagement) },
+                onNavigateToAudit = { navController.navigate(Screen.AuditLogs) }
             )
+        }
+        composable<Screen.Moderation> {
+            ModerationListingsScreen(onBackClick = { navController.popBackStack() })
+        }
+        composable<Screen.CitiesManagement> {
+            CitiesManagementScreen(onBackClick = { navController.popBackStack() })
+        }
+        composable<Screen.UsersManagement> {
+            UsersManagementScreen(onBackClick = { navController.popBackStack() })
+        }
+        composable<Screen.AuditLogs> {
+            AuditLogsScreen(onBackClick = { navController.popBackStack() })
         }
     }
 }

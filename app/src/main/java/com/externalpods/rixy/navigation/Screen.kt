@@ -58,6 +58,9 @@ sealed class Screen {
     data object CitySelector : Screen()
     
     @Serializable
+    data object UserMain : Screen() // Tab container for User mode
+    
+    @Serializable
     data class CityHome(val cityId: String, val citySlug: String) : Screen()
     
     @Serializable
@@ -101,6 +104,9 @@ sealed class Screen {
     
     @Serializable
     data object Moderation : Screen()
+    
+    @Serializable
+    data object ModerationBusinesses : Screen()
     
     @Serializable
     data object UsersManagement : Screen()

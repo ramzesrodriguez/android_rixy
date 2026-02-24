@@ -17,6 +17,8 @@ import kotlinx.coroutines.launch
 data class ModerationUiState(
     val listings: List<Listing> = emptyList(),
     val businesses: List<Business> = emptyList(),
+    val pendingListings: List<Listing> = emptyList(),
+    val pendingBusinesses: List<Business> = emptyList(),
     val selectedStatus: String? = "PENDING_REVIEW",
     val isLoading: Boolean = false,
     val isModerating: Boolean = false,
@@ -36,6 +38,35 @@ class ModerationViewModel(
     }
 
     fun loadModerationQueue() {
+        loadPendingListings()
+        loadPendingBusinesses()
+    }
+    
+    fun loadPendingListings() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                val listings = adminRepository.getModerationListings(status = "PENDING_REVIEW")
+                _uiState.update { it.copy(pendingListings = listings, isLoading = false) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+    
+    fun loadPendingBusinesses() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                val businesses = adminRepository.getModerationBusinesses(status = "PENDING_REVIEW")
+                _uiState.update { it.copy(pendingBusinesses = businesses, isLoading = false) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
+        }
+    }
+
+    fun loadModerationQueueOld() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             
@@ -51,6 +82,8 @@ class ModerationViewModel(
                     it.copy(
                         listings = listings,
                         businesses = businesses,
+                        pendingListings = listings.filter { l -> l.status?.name == "PENDING_REVIEW" },
+                        pendingBusinesses = businesses.filter { b -> b.status?.name == "PENDING_REVIEW" },
                         isLoading = false
                     )
                 }
