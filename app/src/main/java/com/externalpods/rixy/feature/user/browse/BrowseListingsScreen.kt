@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,6 +34,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.externalpods.rixy.core.designsystem.components.DSListingCard
 import com.externalpods.rixy.core.designsystem.components.DSListingCardSkeleton
 import com.externalpods.rixy.core.designsystem.components.DSSearchField
+import com.externalpods.rixy.core.designsystem.components.DSTopBar
 import com.externalpods.rixy.core.designsystem.components.EmptyStateSearch
 import com.externalpods.rixy.core.designsystem.components.ErrorViewGeneric
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
@@ -73,13 +75,12 @@ fun BrowseListingsScreen(
     }
     
     Scaffold(
-        containerColor = RixyColors.White,
         topBar = {
-            com.externalpods.rixy.core.designsystem.components.DSTopBar(
+            DSTopBar(
                 title = "Explorar",
                 onBackClick = onBackClick,
-                backgroundColor = RixyColors.White,
-                titleStyle = RixyTypography.H3
+                backgroundColor = RixyColors.Background,
+                titleStyle = RixyTypography.H1
             )
         }
     ) { paddingValues ->

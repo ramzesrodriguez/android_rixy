@@ -49,12 +49,11 @@ fun SettingsScreen(
     onChangeCityClick: () -> Unit = {}
 ) {
     Scaffold(
-        containerColor = RixyColors.White,
         topBar = {
             DSTopBar(
                 title = "Perfil",
                 onBackClick = onBackClick,
-                backgroundColor = RixyColors.White,
+                backgroundColor = RixyColors.Background,
                 titleStyle = RixyTypography.H1
             )
         }

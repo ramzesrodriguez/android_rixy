@@ -29,12 +29,9 @@ fun OrdersScreen(
     onBackClick: (() -> Unit)?
 ) {
     Scaffold(
-        containerColor = RixyColors.White,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                windowInsets = WindowInsets(0, 0, 0, 0),
-                title = { Text("Mis Pedidos", style = RixyTypography.Title3) },
+                title = { Text("Mis Pedidos", style = RixyTypography.H1) },
                 navigationIcon = {
                     if (onBackClick != null) {
                         IconButton(onClick = onBackClick) {
@@ -43,7 +40,7 @@ fun OrdersScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = RixyColors.Surface,
+                    containerColor = RixyColors.Background,
                     titleContentColor = RixyColors.TextPrimary,
                     navigationIconContentColor = RixyColors.TextPrimary
                 )

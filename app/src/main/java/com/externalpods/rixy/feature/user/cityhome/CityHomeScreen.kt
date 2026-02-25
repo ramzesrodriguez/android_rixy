@@ -24,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -86,14 +87,14 @@ fun CityHomeScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = RixyColors.Background,
         topBar = {
             TopAppBar(
-                windowInsets = WindowInsets(0, 0, 0, 0),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = RixyColors.Background),
                 title = {
                     Text(
                         text = uiState.city?.name ?: city.name,
-                        style = RixyTypography.H4,
+                        style = RixyTypography.H1,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -141,7 +142,7 @@ private fun CityHomeContent(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 32.dp)
+        contentPadding = PaddingValues(top = 16.dp, bottom = 32.dp)
     ) {
         if (isLoading) {
             // Loading State

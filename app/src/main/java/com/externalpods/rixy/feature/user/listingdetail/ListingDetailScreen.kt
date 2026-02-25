@@ -98,6 +98,7 @@ fun ListingDetailScreen(
     }
 
     Scaffold(
+        containerColor = RixyColors.Background,
         contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         Box(modifier = Modifier.fillMaxSize()) {

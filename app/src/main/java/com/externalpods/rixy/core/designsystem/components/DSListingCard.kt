@@ -224,7 +224,7 @@ fun DSListingCardCompact(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .iosShadow(style = RixyShadows.Card, shape = RoundedCornerShape(16.dp))
+            .iosShadow(style = RixyShadows.Card, shape = RoundedCornerShape(16.dp), clip = true)
             .clip(RoundedCornerShape(16.dp))
             .background(RixyColors.Surface)
             .clickable(onClick = onClick)

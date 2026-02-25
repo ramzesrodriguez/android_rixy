@@ -44,6 +44,7 @@ fun CitySelectorScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Scaffold(
+        containerColor = RixyColors.Background,
         topBar = {
             com.externalpods.rixy.core.designsystem.components.DSTopBar(
                 title = "Selecciona tu ciudad",

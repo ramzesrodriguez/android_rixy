@@ -43,7 +43,7 @@ fun FavoritesScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
-        containerColor = RixyColors.White
+        containerColor = RixyColors.Background,
     ) { paddingValues ->
         Column(
             modifier = Modifier
