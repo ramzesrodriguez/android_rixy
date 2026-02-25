@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,16 +22,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.Business
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,9 +40,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.externalpods.rixy.core.designsystem.components.ButtonVariant
-import com.externalpods.rixy.core.designsystem.components.RixyButton
-import com.externalpods.rixy.core.designsystem.components.RixyTextField
+import com.externalpods.rixy.core.designsystem.components.DSButton
+import com.externalpods.rixy.core.designsystem.components.DSLabeledTextField
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import org.koin.androidx.compose.koinViewModel
@@ -81,11 +78,12 @@ fun BusinessEditorScreen(
     }
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = {
-                    Text(
-                        text = if (isEditing) "Editar Negocio" else "Crear Negocio",
+                    Text(text = if (isEditing) "Editar Negocio" else "Crear Negocio",
                         style = RixyTypography.H4
                     )
                 },
@@ -138,8 +136,7 @@ fun BusinessEditorScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Form Fields
-                Text(
-                    text = "Información del Negocio",
+                Text(text = "Información del Negocio",
                     style = RixyTypography.H4,
                     color = RixyColors.TextPrimary
                 )
@@ -147,7 +144,7 @@ fun BusinessEditorScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Business Name
-                RixyTextField(
+                DSLabeledTextField(
                     value = uiState.name,
                     onValueChange = viewModel::onNameChange,
                     label = "Nombre del negocio *",
@@ -158,13 +155,13 @@ fun BusinessEditorScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Description
-                RixyTextField(
+                DSLabeledTextField(
                     value = uiState.description,
                     onValueChange = viewModel::onDescriptionChange,
                     label = "Descripción",
                     placeholder = "Describe tu negocio...",
                     modifier = Modifier.fillMaxWidth(),
-                    maxLines = 4
+                    singleLine = false
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -172,8 +169,7 @@ fun BusinessEditorScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Contact Info
-                Text(
-                    text = "Información de Contacto",
+                Text(text = "Información de Contacto",
                     style = RixyTypography.H4,
                     color = RixyColors.TextPrimary
                 )
@@ -181,7 +177,7 @@ fun BusinessEditorScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Address
-                RixyTextField(
+                DSLabeledTextField(
                     value = uiState.address,
                     onValueChange = viewModel::onAddressChange,
                     label = "Dirección",
@@ -192,7 +188,7 @@ fun BusinessEditorScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Phone
-                RixyTextField(
+                DSLabeledTextField(
                     value = uiState.phone,
                     onValueChange = viewModel::onPhoneChange,
                     label = "Teléfono",
@@ -203,7 +199,7 @@ fun BusinessEditorScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // WhatsApp
-                RixyTextField(
+                DSLabeledTextField(
                     value = uiState.whatsapp,
                     onValueChange = viewModel::onWhatsappChange,
                     label = "WhatsApp",
@@ -216,8 +212,7 @@ fun BusinessEditorScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Online Presence
-                Text(
-                    text = "Presencia Online",
+                Text(text = "Presencia Online",
                     style = RixyTypography.H4,
                     color = RixyColors.TextPrimary
                 )
@@ -225,7 +220,7 @@ fun BusinessEditorScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Website
-                RixyTextField(
+                DSLabeledTextField(
                     value = uiState.website,
                     onValueChange = viewModel::onWebsiteChange,
                     label = "Sitio Web",
@@ -236,7 +231,7 @@ fun BusinessEditorScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Opening Hours
-                RixyTextField(
+                DSLabeledTextField(
                     value = uiState.openingHours,
                     onValueChange = viewModel::onOpeningHoursChange,
                     label = "Horario de Atención",
@@ -248,8 +243,7 @@ fun BusinessEditorScreen(
                 
                 // Error Message
                 uiState.error?.let { error ->
-                    Text(
-                        text = error,
+                    Text(text = error,
                         style = RixyTypography.Body,
                         color = RixyColors.Error,
                         modifier = Modifier.padding(bottom = 16.dp)
@@ -257,8 +251,8 @@ fun BusinessEditorScreen(
                 }
                 
                 // Save Button
-                RixyButton(
-                    text = if (isEditing) "Guardar Cambios" else "Crear Negocio",
+                DSButton(
+                    title = if (isEditing) "Guardar Cambios" else "Crear Negocio",
                     onClick = viewModel::saveBusiness,
                     isLoading = uiState.isSaving,
                     modifier = Modifier.fillMaxWidth()
@@ -307,8 +301,7 @@ private fun HeaderImageSection(
                         tint = RixyColors.White,
                         modifier = Modifier.size(32.dp)
                     )
-                    Text(
-                        text = "Cambiar imagen",
+                    Text(text = "Cambiar imagen",
                         style = RixyTypography.Body,
                         color = RixyColors.White
                     )
@@ -323,8 +316,7 @@ private fun HeaderImageSection(
                     modifier = Modifier.size(48.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Agregar imagen de portada",
+                Text(text = "Agregar imagen de portada",
                     style = RixyTypography.Body,
                     color = RixyColors.TextSecondary
                 )
@@ -393,8 +385,7 @@ private fun LogoSection(
                         modifier = Modifier.size(40.dp)
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Logo",
+                    Text(text = "Logo",
                         style = RixyTypography.Caption,
                         color = RixyColors.TextSecondary
                     )

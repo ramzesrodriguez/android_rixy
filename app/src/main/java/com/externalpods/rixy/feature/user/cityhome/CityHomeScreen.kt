@@ -1,7 +1,6 @@
 package com.externalpods.rixy.feature.user.cityhome
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,34 +18,31 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.externalpods.rixy.core.designsystem.components.v2.DSButton
-import com.externalpods.rixy.core.designsystem.components.v2.DSButtonSize
-import com.externalpods.rixy.core.designsystem.components.v2.DSButtonVariant
-import com.externalpods.rixy.core.designsystem.components.v2.DSCard
-import com.externalpods.rixy.core.designsystem.components.v2.DSCategoryCard
-import com.externalpods.rixy.core.designsystem.components.v2.DSCityHeroSection
-import com.externalpods.rixy.core.designsystem.components.v2.DSHeroSlotCard
-import com.externalpods.rixy.core.designsystem.components.v2.DSListingCard
-import com.externalpods.rixy.core.designsystem.components.v2.DSListingCardCompact
-import com.externalpods.rixy.core.designsystem.components.v2.DSOutlineButton
-import com.externalpods.rixy.core.designsystem.components.v2.DSSectionHeader
-import com.externalpods.rixy.core.designsystem.components.v2.ListingType
-import com.externalpods.rixy.core.designsystem.components.v2.DSCityHeroSkeleton
-import com.externalpods.rixy.core.designsystem.components.v2.DSCategoryCardSkeleton
-import com.externalpods.rixy.core.designsystem.components.v2.DSListingCardSkeleton
-import com.externalpods.rixy.core.designsystem.components.v2.DSListingCardCompactSkeleton
+import com.externalpods.rixy.core.designsystem.components.DSButton
+import com.externalpods.rixy.core.designsystem.components.DSButtonSize
+import com.externalpods.rixy.core.designsystem.components.DSButtonVariant
+import com.externalpods.rixy.core.designsystem.components.DSCard
+import com.externalpods.rixy.core.designsystem.components.DSCategoryCard
+import com.externalpods.rixy.core.designsystem.components.DSCityHeroSection
+import com.externalpods.rixy.core.designsystem.components.DSHeroSlotCard
+import com.externalpods.rixy.core.designsystem.components.DSListingCardCompact
+import com.externalpods.rixy.core.designsystem.components.DSOutlineButton
+import com.externalpods.rixy.core.designsystem.components.DSSectionHeader
+import com.externalpods.rixy.core.designsystem.components.ListingType
+import com.externalpods.rixy.core.designsystem.components.DSCityHeroSkeleton
+import com.externalpods.rixy.core.designsystem.components.DSCategoryCardSkeleton
+import com.externalpods.rixy.core.designsystem.components.DSListingCardSkeleton
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.City
-import com.externalpods.rixy.core.model.CitySection
 import com.externalpods.rixy.core.model.Listing
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -54,7 +50,7 @@ import java.text.NumberFormat
 import java.util.Locale
 
 /**
- * CityHomeScreenV2 - iOS-style City Home Screen
+ * CityHomeScreen - iOS-style City Home Screen
  * 
  * Replicates CityHomeView.swift from iOS with:
  * - CityHeroSection with gradient and stats
@@ -65,7 +61,7 @@ import java.util.Locale
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CityHomeScreenV2(
+fun CityHomeScreen(
     city: City,
     onListingClick: (Listing) -> Unit,
     onSeeAllListings: () -> Unit,
@@ -76,8 +72,10 @@ fun CityHomeScreenV2(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = {
                     Text(
                         text = uiState.city?.name ?: city.name,
@@ -97,7 +95,7 @@ fun CityHomeScreenV2(
             )
         }
     ) { paddingValues ->
-        CityHomeContentV2(
+        CityHomeContent(
             city = uiState.city ?: city,
             featured = uiState.featured,
             feed = uiState.feed,
@@ -111,7 +109,7 @@ fun CityHomeScreenV2(
 }
 
 @Composable
-private fun CityHomeContentV2(
+private fun CityHomeContent(
     city: City,
     featured: Listing?,
     feed: List<Listing>,
@@ -169,7 +167,7 @@ private fun CityHomeContentV2(
         
         // Category Grid (2x2 with emojis - matching iOS)
         item {
-            CategoryGridV2(
+            CategoryGrid(
                 onCategoryClick = { type ->
                     // Navigate to browse with type filter
                 }
@@ -275,7 +273,7 @@ private fun CityHomeContentV2(
 }
 
 @Composable
-private fun CategoryGridV2(
+private fun CategoryGrid(
     onCategoryClick: (ListingType) -> Unit
 ) {
     Column(

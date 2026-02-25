@@ -2,6 +2,7 @@ package com.externalpods.rixy.core.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class Listing(
@@ -14,11 +15,17 @@ data class Listing(
     val slug: String? = null,
     val description: String? = null,
     @SerialName("category_tag") val categoryTag: String? = null,
-    @SerialName("photo_urls") val photoUrls: List<String>? = null,
+    @SerialName("photo_urls")
+    @JsonNames("photoUrls")
+    val photoUrls: List<String>? = null,
     @SerialName("is_active") val isActive: Boolean? = null,
     val status: ListingStatus? = null,
-    @SerialName("created_at") val createdAt: String? = null,
-    @SerialName("updated_at") val updatedAt: String? = null,
+    @SerialName("created_at")
+    @JsonNames("createdAt")
+    val createdAt: String? = null,
+    @SerialName("updated_at")
+    @JsonNames("updatedAt")
+    val updatedAt: String? = null,
     @SerialName("product_details") val productDetails: ProductDetails? = null,
     @SerialName("service_details") val serviceDetails: ServiceDetails? = null,
     @SerialName("event_details") val eventDetails: EventDetails? = null,
@@ -32,7 +39,9 @@ data class ListingSummary(
     val id: String,
     val title: String,
     val type: ListingType,
-    @SerialName("photo_urls") val photoUrls: List<String> = emptyList()
+    @SerialName("photo_urls")
+    @JsonNames("photoUrls")
+    val photoUrls: List<String> = emptyList()
 )
 
 @Serializable

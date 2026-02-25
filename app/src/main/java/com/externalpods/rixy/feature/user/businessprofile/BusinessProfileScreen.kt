@@ -2,6 +2,7 @@ package com.externalpods.rixy.feature.user.businessprofile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -17,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Phone
@@ -36,45 +36,49 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.externalpods.rixy.core.designsystem.components.v2.DSButton
-import com.externalpods.rixy.core.designsystem.components.v2.DSButtonSize
-import com.externalpods.rixy.core.designsystem.components.v2.DSButtonVariant
-import com.externalpods.rixy.core.designsystem.components.v2.DSCard
-import com.externalpods.rixy.core.designsystem.components.v2.DSListingCard
-import com.externalpods.rixy.core.designsystem.components.v2.DSSectionHeader
-import com.externalpods.rixy.core.designsystem.components.v2.DSSkeleton
-import com.externalpods.rixy.core.designsystem.components.v2.DSTypeBadge
-import com.externalpods.rixy.core.designsystem.components.v2.EmptyStateNoListings
-import com.externalpods.rixy.core.designsystem.components.v2.ErrorViewGeneric
-import com.externalpods.rixy.core.designsystem.components.v2.ListingType
+import com.externalpods.rixy.core.designsystem.components.DSButton
+import com.externalpods.rixy.core.designsystem.components.DSButtonVariant
+import com.externalpods.rixy.core.designsystem.components.DSCard
+import com.externalpods.rixy.core.designsystem.components.DSListingCard
+import com.externalpods.rixy.core.designsystem.components.DSSectionHeader
+import com.externalpods.rixy.core.designsystem.components.resolveRemoteImageUrl
+import com.externalpods.rixy.core.designsystem.components.DSSkeleton
+import com.externalpods.rixy.core.designsystem.components.EmptyStateNoListings
+import com.externalpods.rixy.core.designsystem.components.ErrorViewGeneric
+import com.externalpods.rixy.core.designsystem.components.ListingType
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.Business
 import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.core.model.ListingType as ModelListingType
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 /**
- * BusinessProfileScreenV2 - iOS-style Business Profile Screen
+ * BusinessProfileScreen - iOS-style Business Profile Screen
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BusinessProfileScreenV2(
+fun BusinessProfileScreen(
+    citySlug: String,
     businessId: String,
     onBackClick: () -> Unit,
     onListingClick: (Listing) -> Unit,
     onPhoneClick: (String) -> Unit,
-    viewModel: BusinessProfileViewModel = koinViewModel()
+    viewModel: BusinessProfileViewModel = koinViewModel {
+        parametersOf(citySlug, businessId)
+    }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Perfil del Negocio") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -135,7 +139,7 @@ private fun BusinessProfileContent(
             ) {
                 // Cover Image
                 AsyncImage(
-                    model = business.headerImageUrl,
+                    model = resolveRemoteImageUrl(business.headerImageUrl),
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -174,7 +178,7 @@ private fun BusinessProfileContent(
                     ) {
                         if (business.logoUrl != null) {
                             AsyncImage(
-                                model = business.logoUrl,
+                                model = resolveRemoteImageUrl(business.logoUrl),
                                 contentDescription = null,
                                 modifier = Modifier
                                     .fillMaxSize()

@@ -1,4 +1,4 @@
-package com.externalpods.rixy.core.designsystem.components.v2
+package com.externalpods.rixy.core.designsystem.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

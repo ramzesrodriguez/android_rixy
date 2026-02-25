@@ -2,6 +2,7 @@ package com.externalpods.rixy.feature.user.listingdetail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,24 +39,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.externalpods.rixy.core.designsystem.components.v2.DSButton
-import com.externalpods.rixy.core.designsystem.components.v2.DSButtonSize
-import com.externalpods.rixy.core.designsystem.components.v2.DSButtonVariant
-import com.externalpods.rixy.core.designsystem.components.v2.DSCard
-import com.externalpods.rixy.core.designsystem.components.v2.DSErrorView
-import com.externalpods.rixy.core.designsystem.components.v2.DSSkeleton
-import com.externalpods.rixy.core.designsystem.components.v2.DSTypeBadge
-import com.externalpods.rixy.core.designsystem.components.v2.ErrorViewGeneric
-import com.externalpods.rixy.core.designsystem.components.v2.ListingType
+import com.externalpods.rixy.core.designsystem.components.DSButton
+import com.externalpods.rixy.core.designsystem.components.DSButtonSize
+import com.externalpods.rixy.core.designsystem.components.DSButtonVariant
+import com.externalpods.rixy.core.designsystem.components.DSCard
+import com.externalpods.rixy.core.designsystem.components.DSErrorView
+import com.externalpods.rixy.core.designsystem.components.DSSkeleton
+import com.externalpods.rixy.core.designsystem.components.DSTypeBadge
+import com.externalpods.rixy.core.designsystem.components.ErrorViewGeneric
+import com.externalpods.rixy.core.designsystem.components.ListingType
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.core.model.ListingType as ModelListingType
 import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 /**
  * ListingDetailScreenV2 - iOS-style Listing Detail Screen
- * 
+ *
  * Replicates iOS ListingDetailView with:
  * - Full-width image gallery
  * - Floating action buttons (back, favorite, share)
@@ -66,17 +68,23 @@ import org.koin.androidx.compose.koinViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListingDetailScreenV2(
+fun ListingDetailScreen(
+    listingId: String,
+    citySlug: String,
     onBackClick: () -> Unit,
     onBusinessClick: (String) -> Unit,
     onShareClick: () -> Unit,
-    viewModel: ListingDetailViewModel = koinViewModel()
+    viewModel: ListingDetailViewModel = koinViewModel {
+        parametersOf(citySlug, listingId)
+    }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -89,10 +97,10 @@ fun ListingDetailScreenV2(
                 actions = {
                     IconButton(onClick = { viewModel.toggleFavorite() }) {
                         Icon(
-                            imageVector = if (uiState.isFavorite) 
+                            imageVector = if (uiState.isFavorite)
                                 Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                             contentDescription = "Favorite",
-                            tint = if (uiState.isFavorite) 
+                            tint = if (uiState.isFavorite)
                                 RixyColors.Error else RixyColors.TextPrimary
                         )
                     }
@@ -129,6 +137,15 @@ fun ListingDetailScreenV2(
                     modifier = Modifier.padding(paddingValues)
                 )
             }
+            else -> {
+                ErrorViewGeneric(
+                    message = "No se pudo cargar el anuncio",
+                    onRetry = { viewModel.loadListing() },
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                )
+            }
         }
     }
 }
@@ -150,7 +167,7 @@ private fun ListingDetailContent(
                 type = mapListingType(listing.type)
             )
         }
-        
+
         // Title and Price Section
         item {
             Column(
@@ -160,17 +177,17 @@ private fun ListingDetailContent(
             ) {
                 // Type badge
                 DSTypeBadge(type = mapListingType(listing.type))
-                
+
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 // Title
                 Text(
                     text = listing.title,
                     style = RixyTypography.H2
                 )
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 // Price
                 val price = formatPrice(listing)
                 if (price != null) {
@@ -183,7 +200,7 @@ private fun ListingDetailContent(
                 }
             }
         }
-        
+
         // Business Card
         listing.business?.let { business ->
             item {
@@ -209,9 +226,9 @@ private fun ListingDetailContent(
                                 style = RixyTypography.H4
                             )
                         }
-                        
+
                         Spacer(modifier = Modifier.width(12.dp))
-                        
+
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = business.name,
@@ -225,11 +242,11 @@ private fun ListingDetailContent(
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
-        
+
         // Description Section
         item {
             listing.description?.let { description ->
@@ -242,20 +259,20 @@ private fun ListingDetailContent(
                         text = "Descripción",
                         style = RixyTypography.H4
                     )
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     Text(
                         text = description,
                         style = RixyTypography.Body,
                         color = RixyColors.TextSecondary
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
             }
         }
-        
+
         // Details Section
         item {
             DSCard(
@@ -281,9 +298,9 @@ private fun ListingDetailContent(
                             color = RixyColors.TextSecondary
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(12.dp))
-                    
+
                     // Availability
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -303,10 +320,10 @@ private fun ListingDetailContent(
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
         }
-        
+
         // Contact CTA
         item {
             Box(
@@ -358,7 +375,7 @@ private fun ImageGallery(
                 )
             }
         }
-        
+
         // Type badge overlay
         DSTypeBadge(
             type = type,
@@ -384,7 +401,7 @@ private fun ListingDetailLoadingState(
                     .height(300.dp)
             )
         }
-        
+
         // Content skeleton
         items(5) {
             DSSkeleton(

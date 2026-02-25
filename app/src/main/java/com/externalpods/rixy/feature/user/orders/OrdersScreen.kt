@@ -1,6 +1,7 @@
 package com.externalpods.rixy.feature.user.orders
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -15,7 +16,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.externalpods.rixy.core.designsystem.components.v2.EmptyStateOrders
+import com.externalpods.rixy.core.designsystem.components.EmptyStateOrders
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 
@@ -28,8 +29,10 @@ fun OrdersScreen(
     onBackClick: (() -> Unit)?
 ) {
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Mis Pedidos", style = RixyTypography.Title3) },
                 navigationIcon = {
                     if (onBackClick != null) {

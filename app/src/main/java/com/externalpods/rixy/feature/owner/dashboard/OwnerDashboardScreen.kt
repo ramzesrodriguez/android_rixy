@@ -1,6 +1,7 @@
 package com.externalpods.rixy.feature.owner.dashboard
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -27,8 +28,10 @@ fun OwnerDashboardScreen(
     onBackToUser: () -> Unit = {}
 ) {
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Panel de Negocio", style = RixyTypography.Title3) },
                 navigationIcon = {
                     IconButton(onClick = onBackToUser) {

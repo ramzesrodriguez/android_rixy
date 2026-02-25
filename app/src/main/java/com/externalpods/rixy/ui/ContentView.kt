@@ -6,7 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.externalpods.rixy.feature.admin.dashboard.AdminDashboardScreen
 import com.externalpods.rixy.feature.owner.dashboard.OwnerDashboardScreen
-import com.externalpods.rixy.feature.user.main.UserTabBarViewV2
+import com.externalpods.rixy.feature.user.main.UserTabBarView
 import com.externalpods.rixy.navigation.AppMode
 import com.externalpods.rixy.navigation.AppStateViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -24,7 +24,7 @@ fun ContentView(
     
     Crossfade(targetState = currentMode, label = "mode_switch") { mode ->
         when (mode) {
-            AppMode.USER -> UserTabBarViewV2()
+            AppMode.USER -> UserTabBarView()
             AppMode.OWNER -> OwnerDashboardScreen()
             AppMode.ADMIN -> AdminDashboardScreen()
         }

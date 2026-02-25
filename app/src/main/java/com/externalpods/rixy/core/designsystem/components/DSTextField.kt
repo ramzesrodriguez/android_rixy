@@ -1,4 +1,4 @@
-package com.externalpods.rixy.core.designsystem.components.v2
+package com.externalpods.rixy.core.designsystem.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
@@ -41,7 +41,6 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.externalpods.rixy.core.designsystem.animations.RixyAnimations
-import com.externalpods.rixy.core.designsystem.modifiers.focusGlow
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 

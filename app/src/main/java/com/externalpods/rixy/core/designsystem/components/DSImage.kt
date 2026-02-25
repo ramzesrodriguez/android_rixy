@@ -1,7 +1,8 @@
-package com.externalpods.rixy.core.designsystem.components.v2
+package com.externalpods.rixy.core.designsystem.components
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.Base64
 import android.util.Log
 import androidx.compose.foundation.Image
@@ -53,7 +54,7 @@ fun DSAsyncImage(
     placeholder: Painter? = null,
     error: Painter? = null
 ) {
-    val resolvedImageUrl = imageUrl?.let(::normalizeImageUrl)
+    val resolvedImageUrl = resolveRemoteImageUrl(imageUrl)
     Log.d(TAG, "Loading image: ${resolvedImageUrl?.take(100)}...")
     
     if (resolvedImageUrl.isNullOrBlank()) {
@@ -144,12 +145,32 @@ private fun UrlImage(
     )
 }
 
-private fun normalizeImageUrl(raw: String): String {
+fun resolveRemoteImageUrl(raw: String?): String? {
+    if (raw == null) return null
     val value = raw.trim()
     if (value.isBlank()) return value
     if (value.startsWith("data:image")) return value
-    if (value.startsWith("http://") || value.startsWith("https://")) return value
     if (value.startsWith("//")) return "https:$value"
+    if (value.startsWith("http://") || value.startsWith("https://")) {
+        val uri = Uri.parse(value)
+        val host = uri.host?.lowercase().orEmpty()
+        if (host == "localhost" || host == "127.0.0.1" || host == "0.0.0.0" || host == "::1") {
+            val apiUri = Uri.parse(API_ORIGIN)
+            val targetHost = apiUri.host ?: host
+            val targetScheme = apiUri.scheme ?: uri.scheme ?: "http"
+            val targetPort = if (apiUri.port != -1) apiUri.port else uri.port
+            val targetAuthority = if (targetPort != -1) "$targetHost:$targetPort" else targetHost
+
+            val rewritten = uri.buildUpon()
+                .scheme(targetScheme)
+                .encodedAuthority(targetAuthority)
+                .build()
+                .toString()
+            Log.w(TAG, "Rewrote localhost image URL: $value -> $rewritten")
+            return rewritten
+        }
+        return value
+    }
     if (value.startsWith("/")) return "$API_ORIGIN$value"
     return "$API_ORIGIN/${value.removePrefix("/")}"
 }

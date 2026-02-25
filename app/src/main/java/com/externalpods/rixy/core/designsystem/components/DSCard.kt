@@ -1,4 +1,4 @@
-package com.externalpods.rixy.core.designsystem.components.v2
+package com.externalpods.rixy.core.designsystem.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.externalpods.rixy.core.designsystem.animations.RixyAnimations
-import com.externalpods.rixy.core.designsystem.modifiers.cardShadow
 import com.externalpods.rixy.core.designsystem.modifiers.iosShadow
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyShadows

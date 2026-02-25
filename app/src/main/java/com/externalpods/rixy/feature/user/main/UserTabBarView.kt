@@ -2,7 +2,6 @@ package com.externalpods.rixy.feature.user.main
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
@@ -41,9 +40,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.externalpods.rixy.core.designsystem.components.EmptyStateNoCity
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
-import com.externalpods.rixy.feature.user.cityhome.CityHomeScreenV2
+import com.externalpods.rixy.feature.user.cityhome.CityHomeScreen
 import com.externalpods.rixy.feature.user.cityselector.CitySelectorScreen
 import com.externalpods.rixy.feature.user.favorites.FavoritesScreen
 import com.externalpods.rixy.feature.user.orders.OrdersScreen
@@ -53,7 +53,7 @@ import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 
 /**
- * UserTabBarViewV2 - iOS-style Tab Bar (mirrors iOS UserTabBarView)
+ * UserTabBarView - iOS-style Tab Bar (mirrors iOS UserTabBarView)
  * 
  * Features:
  * - 5 tabs: Home, Search, Favorites, Orders, Profile
@@ -62,7 +62,7 @@ import org.koin.androidx.compose.koinViewModel
  * - Brand tint color
  */
 @Composable
-fun UserTabBarViewV2(
+fun UserTabBarView(
     appState: AppStateViewModel = koinViewModel()
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
@@ -129,7 +129,7 @@ fun UserTabBarViewV2(
             when (selectedTab) {
                 0 -> HomeTab()
                 1 -> SearchTab()
-                2 -> FavoritesTab()
+                2 -> FavoritesTab(appState = appState)
                 3 -> OrdersTab()
                 4 -> ProfileTab()
             }
@@ -157,10 +157,10 @@ fun HomeTab(
     ) {
         composable("city_home") {
             selectedCity?.let { city ->
-                CityHomeScreenV2(
+                CityHomeScreen(
                     city = city,
                     onListingClick = { listing ->
-                        navController.navigate(ListingDetailRoute(listing.id))
+                        navController.navigate(ListingDetailRoute(listing.id, city.slug))
                     },
                     onSeeAllListings = {
                         navController.navigate(BrowseRoute(city.slug))
@@ -192,10 +192,12 @@ fun HomeTab(
         // Type-safe navigation destinations
         composable<ListingDetailRoute> { backStackEntry ->
             val route = backStackEntry.toRoute<ListingDetailRoute>()
-            com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreenV2(
+            com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreen(
+                listingId = route.listingId,
+                citySlug = route.citySlug,
                 onBackClick = { navController.popBackStack() },
                 onBusinessClick = { businessId ->
-                    navController.navigate(BusinessProfileRoute(businessId))
+                    navController.navigate(BusinessProfileRoute(businessId, route.citySlug))
                 },
                 onShareClick = { }
             )
@@ -203,11 +205,12 @@ fun HomeTab(
         
         composable<BusinessProfileRoute> { backStackEntry ->
             val route = backStackEntry.toRoute<BusinessProfileRoute>()
-            com.externalpods.rixy.feature.user.businessprofile.BusinessProfileScreenV2(
+            com.externalpods.rixy.feature.user.businessprofile.BusinessProfileScreen(
+                citySlug = route.citySlug,
                 businessId = route.businessId,
                 onBackClick = { navController.popBackStack() },
                 onListingClick = { listing ->
-                    navController.navigate(ListingDetailRoute(listing.id))
+                    navController.navigate(ListingDetailRoute(listing.id, route.citySlug))
                 },
                 onPhoneClick = { }
             )
@@ -219,7 +222,7 @@ fun HomeTab(
                 citySlug = route.citySlug,
                 onBackClick = { navController.popBackStack() },
                 onListingClick = { listing ->
-                    navController.navigate(ListingDetailRoute(listing.id))
+                    navController.navigate(ListingDetailRoute(listing.id, route.citySlug))
                 }
             )
         }
@@ -244,7 +247,7 @@ fun SearchTab(
                     citySlug = selectedCity!!.slug,
                     onBackClick = null, // No back in search tab
                     onListingClick = { listing ->
-                        navController.navigate(ListingDetailRoute(listing.id))
+                        navController.navigate(ListingDetailRoute(listing.id, selectedCity!!.slug))
                     }
                 )
             } else {
@@ -270,10 +273,12 @@ fun SearchTab(
         
         composable<ListingDetailRoute> { backStackEntry ->
             val route = backStackEntry.toRoute<ListingDetailRoute>()
-            com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreenV2(
+            com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreen(
+                listingId = route.listingId,
+                citySlug = route.citySlug,
                 onBackClick = { navController.popBackStack() },
                 onBusinessClick = { businessId ->
-                    navController.navigate(BusinessProfileRoute(businessId))
+                    navController.navigate(BusinessProfileRoute(businessId, route.citySlug))
                 },
                 onShareClick = { }
             )
@@ -281,11 +286,12 @@ fun SearchTab(
         
         composable<BusinessProfileRoute> { backStackEntry ->
             val route = backStackEntry.toRoute<BusinessProfileRoute>()
-            com.externalpods.rixy.feature.user.businessprofile.BusinessProfileScreenV2(
+            com.externalpods.rixy.feature.user.businessprofile.BusinessProfileScreen(
+                citySlug = route.citySlug,
                 businessId = route.businessId,
                 onBackClick = { navController.popBackStack() },
                 onListingClick = { listing ->
-                    navController.navigate(ListingDetailRoute(listing.id))
+                    navController.navigate(ListingDetailRoute(listing.id, route.citySlug))
                 },
                 onPhoneClick = { }
             )
@@ -295,8 +301,11 @@ fun SearchTab(
 
 // MARK: - Favorites Tab
 @Composable
-fun FavoritesTab() {
+fun FavoritesTab(
+    appState: AppStateViewModel = koinViewModel()
+) {
     val navController = rememberNavController()
+    val selectedCity by appState.selectedCity.collectAsStateWithLifecycle()
     
     NavHost(
         navController = navController,
@@ -305,7 +314,10 @@ fun FavoritesTab() {
         composable("favorites_main") {
             FavoritesScreen(
                 onListingClick = { listing ->
-                    navController.navigate(ListingDetailRoute(listing.id))
+                    val citySlug = selectedCity?.slug
+                    if (citySlug != null) {
+                        navController.navigate(ListingDetailRoute(listing.id, citySlug))
+                    }
                 },
                 onBackClick = null // No back in favorites tab
             )
@@ -313,7 +325,9 @@ fun FavoritesTab() {
         
         composable<ListingDetailRoute> { backStackEntry ->
             val route = backStackEntry.toRoute<ListingDetailRoute>()
-            com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreenV2(
+            com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreen(
+                listingId = route.listingId,
+                citySlug = route.citySlug,
                 onBackClick = { navController.popBackStack() },
                 onBusinessClick = { },
                 onShareClick = { }
@@ -354,7 +368,7 @@ fun ProfileTab(
         }
         
         composable("login") {
-            // LoginScreenV2 would go here
+            // LoginScreen would go here
             Box(modifier = Modifier.fillMaxSize()) {
                 Text("Login Screen - TODO")
             }
@@ -371,7 +385,7 @@ fun SelectCityPromptScreen(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = androidx.compose.ui.Alignment.Center
     ) {
-        com.externalpods.rixy.core.designsystem.components.v2.EmptyStateNoCity(
+        EmptyStateNoCity(
             onSelectCity = onSelectCity
         )
     }
@@ -379,10 +393,10 @@ fun SelectCityPromptScreen(
 
 // Type-safe navigation routes (mirrors iOS NavigationDestination)
 @Serializable
-data class ListingDetailRoute(val listingId: String)
+data class ListingDetailRoute(val listingId: String, val citySlug: String)
 
 @Serializable
-data class BusinessProfileRoute(val businessId: String)
+data class BusinessProfileRoute(val businessId: String, val citySlug: String)
 
 @Serializable
 data class BrowseRoute(val citySlug: String)

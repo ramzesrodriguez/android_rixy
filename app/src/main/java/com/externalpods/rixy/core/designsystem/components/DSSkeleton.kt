@@ -1,4 +1,4 @@
-package com.externalpods.rixy.core.designsystem.components.v2
+package com.externalpods.rixy.core.designsystem.components
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -11,12 +11,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,6 +24,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 
@@ -40,7 +42,7 @@ fun DSSkeleton(
     modifier: Modifier = Modifier,
     color: Color = RixyColors.Border.copy(alpha = 0.3f),
     shimmerColor: Color = RixyColors.Border.copy(alpha = 0.5f),
-    shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(4.dp)
+    shape: Shape = RoundedCornerShape(4.dp)
 ) {
     val shimmerColors = listOf(
         color,
@@ -283,10 +285,10 @@ fun DSTextSkeleton(
  */
 @Composable
 fun DSCircleSkeleton(
-    size: androidx.compose.ui.unit.Dp = 48.dp) {
+    size: Dp = 48.dp) {
     DSSkeleton(
         modifier = Modifier.size(size),
-        shape = androidx.compose.foundation.shape.CircleShape
+        shape = CircleShape
     )
 }
 

@@ -1,10 +1,10 @@
 package com.externalpods.rixy.feature.user.favorites
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,14 +18,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.externalpods.rixy.core.designsystem.components.v2.DSListingCardCompact
-import com.externalpods.rixy.core.designsystem.components.v2.DSListingCardCompactSkeleton
-import com.externalpods.rixy.core.designsystem.components.v2.EmptyStateFavorites
+import com.externalpods.rixy.core.designsystem.components.DSListingCardCompact
+import com.externalpods.rixy.core.designsystem.components.DSListingCardCompactSkeleton
+import com.externalpods.rixy.core.designsystem.components.EmptyStateFavorites
+import com.externalpods.rixy.core.designsystem.components.ListingType
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.Listing
@@ -45,8 +45,10 @@ fun FavoritesScreen(
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Favoritos", style = RixyTypography.Title3) },
                 navigationIcon = {
                     if (onBackClick != null) {
@@ -85,7 +87,7 @@ fun FavoritesScreen(
                             title = listing.title,
                             imageUrl = listing.photoUrls?.firstOrNull(),
                             priceFormatted = listing.productDetails?.priceAmount,
-                            type = com.externalpods.rixy.core.designsystem.components.v2.ListingType.valueOf(
+                            type = ListingType.valueOf(
                                 listing.type.name
                             ),
                             businessName = listing.business?.name,

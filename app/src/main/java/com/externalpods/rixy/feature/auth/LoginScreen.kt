@@ -2,6 +2,7 @@ package com.externalpods.rixy.feature.auth
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,19 +34,18 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.externalpods.rixy.core.designsystem.components.v2.DSButton
-import com.externalpods.rixy.core.designsystem.components.v2.DSButtonSize
-import com.externalpods.rixy.core.designsystem.components.v2.DSButtonVariant
-import com.externalpods.rixy.core.designsystem.components.v2.DSCard
-import com.externalpods.rixy.core.designsystem.components.v2.DSErrorView
-import com.externalpods.rixy.core.designsystem.components.v2.DSTextField
-import com.externalpods.rixy.core.designsystem.components.v2.ErrorViewGeneric
+import com.externalpods.rixy.core.designsystem.components.DSButton
+import com.externalpods.rixy.core.designsystem.components.DSButtonSize
+import com.externalpods.rixy.core.designsystem.components.DSButtonVariant
+import com.externalpods.rixy.core.designsystem.components.DSCard
+import com.externalpods.rixy.core.designsystem.components.DSTextField
+import com.externalpods.rixy.core.designsystem.components.ErrorViewGeneric
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import org.koin.androidx.compose.koinViewModel
 
 /**
- * LoginScreenV2 - iOS-style Login Screen
+ * LoginScreen - iOS-style Login Screen
  * 
  * Replicates iOS LoginView with:
  * - Centered logo/icon
@@ -57,7 +57,7 @@ import org.koin.androidx.compose.koinViewModel
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreenV2(
+fun LoginScreen(
     onNavigateToRegister: () -> Unit,
     onLoginSuccess: () -> Unit,
     onBackClick: (() -> Unit)? = null,
@@ -75,8 +75,10 @@ fun LoginScreenV2(
     }
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("") },
                 navigationIcon = {
                     onBackClick?.let { onBack ->

@@ -1,7 +1,8 @@
-package com.externalpods.rixy.core.designsystem.components.v2
+package com.externalpods.rixy.core.designsystem.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextOverflow
@@ -70,7 +72,7 @@ fun DSHeroSlotCard(
                 imageUrl = imageUrl,
                 contentDescription = title,
                 modifier = Modifier.fillMaxWidth(),
-                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                contentScale = ContentScale.Crop
             )
             
             // Type badge capsule (black background like iOS)
@@ -153,7 +155,7 @@ fun DSCategoryCard(
             .clickable(onClick = onClick)
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = emoji,
@@ -207,7 +209,7 @@ fun DSCityHeroSection(
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center
+            verticalArrangement = Arrangement.Center
         ) {
             // City name
             Text(
@@ -229,7 +231,7 @@ fun DSCityHeroSection(
             
             // Stats row
             Row(
-                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(32.dp)
+                horizontalArrangement = Arrangement.spacedBy(32.dp)
             ) {
                 StatItem(
                     value = formatCount(businessCount),

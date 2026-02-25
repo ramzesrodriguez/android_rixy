@@ -1,6 +1,7 @@
 package com.externalpods.rixy.feature.owner.cityslots
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -13,6 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.externalpods.rixy.core.designsystem.components.*
+import com.externalpods.rixy.core.designsystem.components.DSButton
+import com.externalpods.rixy.core.designsystem.components.DSButtonSize
+import com.externalpods.rixy.core.designsystem.components.DSButtonVariant
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import org.koin.androidx.compose.koinViewModel
@@ -26,8 +30,10 @@ fun OwnerCitySlotsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Espacios Ciudad", style = RixyTypography.H4) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -103,11 +109,11 @@ private fun SubscriptionCard(
                 ActiveBadge(isActive = subscription.status == com.externalpods.rixy.core.model.CitySlotStatus.ACTIVE)
             }
             Spacer(Modifier.height(8.dp))
-            RixyButton(
-                text = "Cancelar",
+            DSButton(
+                title = "Cancelar",
                 onClick = onCancel,
-                variant = ButtonVariant.OUTLINE,
-                size = ButtonSize.SMALL
+                variant = DSButtonVariant.OUTLINE,
+                size = DSButtonSize.SMALL
             )
         }
     }
@@ -130,10 +136,10 @@ private fun AvailableSlotCard(
                 Text(slot.type.displayName, style = RixyTypography.BodyMedium)
                 Text("${slot.cityName} - Index: ${slot.slotIndex}", style = RixyTypography.Caption, color = RixyColors.TextSecondary)
             }
-            RixyButton(
-                text = "Comprar",
+            DSButton(
+                title = "Comprar",
                 onClick = onPurchase,
-                size = ButtonSize.SMALL
+                size = DSButtonSize.SMALL
             )
         }
     }

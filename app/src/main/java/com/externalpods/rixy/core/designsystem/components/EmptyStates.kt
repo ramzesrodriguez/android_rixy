@@ -1,4 +1,4 @@
-package com.externalpods.rixy.core.designsystem.components.v2
+package com.externalpods.rixy.core.designsystem.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.LocationOn
@@ -82,7 +83,7 @@ private fun EmptyStateView(
         // Icon
         Surface(
             modifier = Modifier.size(80.dp),
-            shape = androidx.compose.foundation.shape.CircleShape,
+            shape = CircleShape,
             color = RixyColors.BrandLight
         ) {
             Box(contentAlignment = Alignment.Center) {

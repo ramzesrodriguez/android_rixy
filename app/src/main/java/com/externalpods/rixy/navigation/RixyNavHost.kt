@@ -12,30 +12,30 @@ import androidx.navigation.compose.rememberNavController
 import com.externalpods.rixy.core.designsystem.navigation.RixyNavigationTransitions
 import com.externalpods.rixy.core.model.City
 import com.externalpods.rixy.core.model.Listing
-import com.externalpods.rixy.feature.user.cityhome.CityHomeScreenV2
+import com.externalpods.rixy.feature.user.cityhome.CityHomeScreen
 
 /**
  * Navigation routes sealed class (type-safe)
  */
-sealed class ScreenV2(val route: String) {
-    data object CityHome : ScreenV2("city_home")
-    data object Browse : ScreenV2("browse")
-    data object ListingDetail : ScreenV2("listing_detail/{listingId}") {
+sealed class NavScreen(val route: String) {
+    data object CityHome : NavScreen("city_home")
+    data object Browse : NavScreen("browse")
+    data object ListingDetail : NavScreen("listing_detail/{listingId}") {
         fun createRoute(listingId: String) = "listing_detail/$listingId"
     }
-    data object BusinessProfile : ScreenV2("business/{businessId}") {
+    data object BusinessProfile : NavScreen("business/{businessId}") {
         fun createRoute(businessId: String) = "business/$businessId"
     }
-    data object Favorites : ScreenV2("favorites")
-    data object Orders : ScreenV2("orders")
-    data object Profile : ScreenV2("profile")
-    data object Settings : ScreenV2("settings")
-    data object Login : ScreenV2("login")
-    data object Register : ScreenV2("register")
+    data object Favorites : NavScreen("favorites")
+    data object Orders : NavScreen("orders")
+    data object Profile : NavScreen("profile")
+    data object Settings : NavScreen("settings")
+    data object Login : NavScreen("login")
+    data object Register : NavScreen("register")
 }
 
 /**
- * RixyNavHostV2 - Navigation with iOS-style transitions
+ * RixyNavHost - Navigation with iOS-style transitions
  * 
  * Features:
  * - Push/Pop transitions (slide from right)
@@ -44,9 +44,9 @@ sealed class ScreenV2(val route: String) {
  * - No transition for same-level navigation
  */
 @Composable
-fun RixyNavHostV2(
+fun RixyNavHost(
     navController: NavHostController = rememberNavController(),
-    startDestination: String = ScreenV2.CityHome.route,
+    startDestination: String = NavScreen.CityHome.route,
     city: City,
     modifier: Modifier = Modifier
 ) {
@@ -61,37 +61,37 @@ fun RixyNavHostV2(
     ) {
         // City Home (main screen)
         composable(
-            route = ScreenV2.CityHome.route,
+            route = NavScreen.CityHome.route,
             enterTransition = { EnterTransition.None }, // No animation for start destination
             exitTransition = { ExitTransition.None }
         ) {
-            CityHomeScreenV2(
+            CityHomeScreen(
                 city = city,
                 onListingClick = { listing ->
-                    navController.navigate(ScreenV2.ListingDetail.createRoute(listing.id))
+                    navController.navigate(NavScreen.ListingDetail.createRoute(listing.id))
                 },
                 onSeeAllListings = {
-                    navController.navigate(ScreenV2.Browse.route)
+                    navController.navigate(NavScreen.Browse.route)
                 },
                 onChangeCity = {
                     // Navigate to city selector
-                    // navController.navigate(ScreenV2.CitySelector.route)
+                    // navController.navigate(NavScreen.CitySelector.route)
                 },
                 onBusinessCTAClick = {
-                    navController.navigate(ScreenV2.Login.route)
+                    navController.navigate(NavScreen.Login.route)
                 }
             )
         }
         
         // Browse / Search
         composable(
-            route = ScreenV2.Browse.route
+            route = NavScreen.Browse.route
         ) {
-            // BrowseListingsScreenV2(
+            // BrowseListingsScreen(
             //     cityId = city.id,
             //     onBackClick = { navController.popBackStack() },
             //     onListingClick = { listing ->
-            //         navController.navigate(ScreenV2.ListingDetail.createRoute(listing.id))
+            //         navController.navigate(NavScreen.ListingDetail.createRoute(listing.id))
             //     }
             // )
             PlaceholderScreen("Buscar", onBack = { navController.popBackStack() })
@@ -99,14 +99,14 @@ fun RixyNavHostV2(
         
         // Listing Detail
         composable(
-            route = ScreenV2.ListingDetail.route
+            route = NavScreen.ListingDetail.route
         ) { backStackEntry ->
             val listingId = backStackEntry.arguments?.getString("listingId")
-            // ListingDetailScreenV2(
+            // ListingDetailScreen(
             //     listingId = listingId,
             //     onBackClick = { navController.popBackStack() },
             //     onBusinessClick = { businessId ->
-            //         navController.navigate(ScreenV2.BusinessProfile.createRoute(businessId))
+            //         navController.navigate(NavScreen.BusinessProfile.createRoute(businessId))
             //     }
             // )
             PlaceholderScreen("Detalle: $listingId", onBack = { navController.popBackStack() })
@@ -114,10 +114,10 @@ fun RixyNavHostV2(
         
         // Business Profile
         composable(
-            route = ScreenV2.BusinessProfile.route
+            route = NavScreen.BusinessProfile.route
         ) { backStackEntry ->
             val businessId = backStackEntry.arguments?.getString("businessId")
-            // BusinessProfileScreenV2(
+            // BusinessProfileScreen(
             //     businessId = businessId,
             //     onBackClick = { navController.popBackStack() }
             // )
@@ -126,7 +126,7 @@ fun RixyNavHostV2(
         
         // Favorites
         composable(
-            route = ScreenV2.Favorites.route,
+            route = NavScreen.Favorites.route,
             enterTransition = { RixyNavigationTransitions.fadeEnter(this) },
             exitTransition = { RixyNavigationTransitions.fadeExit(this) }
         ) {
@@ -135,7 +135,7 @@ fun RixyNavHostV2(
         
         // Orders
         composable(
-            route = ScreenV2.Orders.route,
+            route = NavScreen.Orders.route,
             enterTransition = { RixyNavigationTransitions.fadeEnter(this) },
             exitTransition = { RixyNavigationTransitions.fadeExit(this) }
         ) {
@@ -144,7 +144,7 @@ fun RixyNavHostV2(
         
         // Profile
         composable(
-            route = ScreenV2.Profile.route,
+            route = NavScreen.Profile.route,
             enterTransition = { RixyNavigationTransitions.fadeEnter(this) },
             exitTransition = { RixyNavigationTransitions.fadeExit(this) }
         ) {
@@ -153,14 +153,14 @@ fun RixyNavHostV2(
         
         // Settings
         composable(
-            route = ScreenV2.Settings.route
+            route = NavScreen.Settings.route
         ) {
             PlaceholderScreen("Ajustes", onBack = { navController.popBackStack() })
         }
         
         // Login (Modal presentation)
         composable(
-            route = ScreenV2.Login.route,
+            route = NavScreen.Login.route,
             enterTransition = { RixyNavigationTransitions.modalEnter(this) },
             exitTransition = { RixyNavigationTransitions.modalExit(this) },
             popEnterTransition = { RixyNavigationTransitions.modalEnter(this) },
@@ -171,7 +171,7 @@ fun RixyNavHostV2(
         
         // Register (Modal presentation)
         composable(
-            route = ScreenV2.Register.route,
+            route = NavScreen.Register.route,
             enterTransition = { RixyNavigationTransitions.modalEnter(this) },
             exitTransition = { RixyNavigationTransitions.modalExit(this) },
             popEnterTransition = { RixyNavigationTransitions.modalEnter(this) },
