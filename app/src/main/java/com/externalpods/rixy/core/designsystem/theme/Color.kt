@@ -22,7 +22,8 @@ object RixyColors {
     val Black = Color(0xFF000000)
     
     // Neutrals (Light Mode)
-    val Background = Color(0xFFFAF9F7)
+    // iOS-like grouped background (cool light gray)
+    val Background = Color(0xFFF2F2F7)
     val Surface = Color(0xFFFFFFFF)
     val SurfaceVariant = Color(0xFFF3F4F6)
     val Border = Color(0xFFE5E7EB)

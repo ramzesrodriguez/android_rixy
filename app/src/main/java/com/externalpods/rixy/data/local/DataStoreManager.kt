@@ -53,6 +53,7 @@ class DataStoreManager(private val context: Context) {
     val isAuthenticated: Flow<Boolean> = context.dataStore.data.map { it[IS_AUTHENTICATED] ?: false }
     val currentUserId: Flow<String?> = context.dataStore.data.map { it[USER_ID] }
     val currentUserEmail: Flow<String?> = context.dataStore.data.map { it[USER_EMAIL] }
+    val favoritesJson: Flow<String?> = context.dataStore.data.map { it[FAVORITES_JSON] }
 
     suspend fun saveAuthState(userId: String, email: String) {
         context.dataStore.edit { prefs ->
@@ -70,6 +71,18 @@ class DataStoreManager(private val context: Context) {
         }
     }
 
+    suspend fun saveFavoritesJson(value: String) {
+        context.dataStore.edit { prefs ->
+            prefs[FAVORITES_JSON] = value
+        }
+    }
+
+    suspend fun clearFavorites() {
+        context.dataStore.edit { prefs ->
+            prefs.remove(FAVORITES_JSON)
+        }
+    }
+
     companion object {
         private val CITY_ID = stringPreferencesKey("selected_city_id")
         private val CITY_SLUG = stringPreferencesKey("selected_city_slug")
@@ -80,5 +93,6 @@ class DataStoreManager(private val context: Context) {
         private val IS_AUTHENTICATED = booleanPreferencesKey("is_authenticated")
         private val USER_ID = stringPreferencesKey("current_user_id")
         private val USER_EMAIL = stringPreferencesKey("current_user_email")
+        private val FAVORITES_JSON = stringPreferencesKey("favorites_json")
     }
 }

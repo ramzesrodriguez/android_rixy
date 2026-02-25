@@ -24,9 +24,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 // Using DSAsyncImage instead of coil directly
-import com.externalpods.rixy.core.designsystem.modifiers.iosShadow
+import com.externalpods.rixy.core.designsystem.modifiers.cardShadow
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
-import com.externalpods.rixy.core.designsystem.theme.RixyShadows
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 
 /**
@@ -56,7 +55,7 @@ fun DSHeroSlotCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .iosShadow(style = RixyShadows.Card, shape = RoundedCornerShape(16.dp))
+            .cardShadow(elevation = 4.dp, borderRadius = 16.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(RixyColors.Surface)
             .clickable(onClick = onClick)
@@ -280,5 +279,3 @@ private fun StatItem(
 private fun formatCount(count: Int?): String {
     return count?.toString() ?: "N/D"
 }
-
-

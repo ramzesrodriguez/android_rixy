@@ -10,7 +10,7 @@ val serviceModule = module {
     viewModel { AppStateViewModel(get()) }
     
     // Services
-    single { AuthService(get(), get(), get()) }
+    single { AuthService(get(), get(), get(), get()) }
     single { PaymentService(get()) }
     single { ImageUploadService(get(), get(), androidContext()) }
     single { AnalyticsService(get()) }

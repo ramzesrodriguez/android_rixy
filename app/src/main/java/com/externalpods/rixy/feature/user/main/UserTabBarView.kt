@@ -349,6 +349,7 @@ fun ProfileTab(
 ) {
     val navController = rememberNavController()
     val isAuthenticated by appState.isAuthenticated
+    val selectedCity by appState.selectedCity.collectAsStateWithLifecycle()
     
     NavHost(
         navController = navController,
@@ -356,6 +357,8 @@ fun ProfileTab(
     ) {
         composable("profile_main") {
             SettingsScreen(
+                isAuthenticated = isAuthenticated,
+                selectedCityName = selectedCity?.name,
                 onNavigateToLogin = {
                     navController.navigate("login")
                 },
@@ -363,7 +366,8 @@ fun ProfileTab(
                     // Switch to owner mode
                     appState.switchMode(com.externalpods.rixy.navigation.AppMode.OWNER)
                 },
-                onBackClick = null
+                onBackClick = null,
+                onChangeCityClick = { }
             )
         }
         

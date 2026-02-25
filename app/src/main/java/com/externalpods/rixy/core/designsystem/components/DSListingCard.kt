@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 // Using DSAsyncImage instead of coil directly
 import com.externalpods.rixy.core.designsystem.animations.RixyAnimations
+import com.externalpods.rixy.core.designsystem.modifiers.cardShadow
 import com.externalpods.rixy.core.designsystem.modifiers.iosShadow
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyShadows
@@ -100,7 +101,7 @@ fun DSListingCard(
     Column(
         modifier = modifier
             .then(if (useFixedWidth) Modifier.width(cardWidth) else Modifier.fillMaxWidth())
-            .iosShadow(style = RixyShadows.Card, shape = RoundedCornerShape(16.dp))
+            .cardShadow(elevation = 4.dp, borderRadius = 16.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(RixyColors.Surface)
             .clickable(onClick = onCardClick)
@@ -225,7 +226,7 @@ fun DSListingCardCompact(
             .fillMaxWidth()
             .iosShadow(style = RixyShadows.Card, shape = RoundedCornerShape(16.dp))
             .clip(RoundedCornerShape(16.dp))
-            .background(RixyColors.Background)
+            .background(RixyColors.Surface)
             .clickable(onClick = onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -287,4 +288,3 @@ fun DSListingCardCompact(
         // )
     }
 }
-

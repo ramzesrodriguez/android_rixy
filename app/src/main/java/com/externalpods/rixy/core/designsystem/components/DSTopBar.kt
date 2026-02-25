@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -38,7 +39,8 @@ fun DSTopBar(
     onBackClick: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {},
     backgroundColor: Color = RixyColors.Surface,
-    contentColor: Color = RixyColors.TextPrimary
+    contentColor: Color = RixyColors.TextPrimary,
+    titleStyle: TextStyle = RixyTypography.BodyMedium.copy(fontWeight = FontWeight.SemiBold)
 ) {
     Surface(
         modifier = modifier
@@ -70,7 +72,7 @@ fun DSTopBar(
             // Title centered
             Text(
                 text = title,
-                style = RixyTypography.BodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                style = titleStyle,
                 color = contentColor,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

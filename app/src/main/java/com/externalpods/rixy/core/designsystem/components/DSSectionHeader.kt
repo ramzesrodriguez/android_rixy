@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
@@ -51,7 +52,7 @@ fun DSSectionHeader(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top // Align to top like iOS
+        verticalAlignment = Alignment.CenterVertically
     ) {
         // Title and subtitle column
         Column(
@@ -62,7 +63,7 @@ fun DSSectionHeader(
                 text = title,
                 style = RixyTypography.H2, // 22sp bold like iOS
                 color = RixyColors.TextPrimary,
-                maxLines = 1,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
             
@@ -83,7 +84,7 @@ fun DSSectionHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .clickable(onClick = onClick)
-                    .padding(start = 8.dp)
+                    .padding(start = 6.dp)
             ) {
                 Text(
                     text = actionText,
@@ -92,14 +93,14 @@ fun DSSectionHeader(
                 )
                 
                 if (showArrow) {
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(2.dp))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                         contentDescription = null,
                         tint = RixyColors.Brand,
                         modifier = Modifier
-                            .padding(start = 2.dp)
-                            // No explicit size, let it use default (24dp)
+                            .padding(start = 1.dp)
+                            .size(18.dp)
                     )
                 }
             }

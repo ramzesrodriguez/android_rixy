@@ -14,7 +14,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -74,10 +73,13 @@ fun BrowseListingsScreen(
     }
     
     Scaffold(
+        containerColor = RixyColors.White,
         topBar = {
             com.externalpods.rixy.core.designsystem.components.DSTopBar(
                 title = "Explorar",
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                backgroundColor = RixyColors.White,
+                titleStyle = RixyTypography.H3
             )
         }
     ) { paddingValues ->
@@ -85,6 +87,7 @@ fun BrowseListingsScreen(
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(horizontal = 16.dp)
         ) {
             // Search bar
             DSSearchField(
@@ -94,14 +97,14 @@ fun BrowseListingsScreen(
                 placeholder = "Buscar anuncios...",
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(vertical = 8.dp)
             )
             
             // Type filter chips
             TypeFilterChips(
                 selectedType = uiState.selectedType,
                 onTypeSelected = viewModel::onTypeSelected,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                modifier = Modifier.padding(vertical = 4.dp)
             )
             
             Spacer(modifier = Modifier.height(8.dp))
@@ -141,7 +144,7 @@ fun BrowseListingsScreen(
                         state = gridState,
                         columns = GridCells.Fixed(2),
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        contentPadding = PaddingValues(vertical = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
@@ -157,6 +160,12 @@ fun BrowseListingsScreen(
                                     ?: listing.eventDetails?.priceAmount,
                                 type = com.externalpods.rixy.core.designsystem.components.ListingType.valueOf(listing.type.name),
                                 businessName = listing.business?.name,
+                                isFavorite = uiState.favoriteIds.contains(listing.id),
+                                onFavoriteClick = if (uiState.loadingFavoriteIds.contains(listing.id)) {
+                                    null
+                                } else {
+                                    { viewModel.toggleFavorite(listing.id) }
+                                },
                                 onCardClick = { onListingClick(listing) },
                                 useFixedWidth = false
                             )

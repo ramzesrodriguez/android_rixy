@@ -60,17 +60,23 @@ data class CitySummary(
 @Serializable
 data class CitySection(
     val id: String,
-    @SerialName("city_id") val cityId: String,
+    @SerialName("city_id")
+    @JsonNames("cityId")
+    val cityId: String? = null,
     val key: String,
     val title: String,
     val subtitle: String? = null,
     val type: CitySectionType,
     val order: Int,
-    @SerialName("is_active") val isActive: Boolean,
-    @SerialName("config_json") val configJson: Map<String, JsonElement>? = null
+    @SerialName("is_active")
+    @JsonNames("isActive")
+    val isActive: Boolean? = null,
+    @SerialName("config_json")
+    @JsonNames("configJson")
+    val configJson: Map<String, JsonElement>? = null
 ) {
     // Helper computed properties
-    val isVisible: Boolean get() = isActive
+    val isVisible: Boolean get() = isActive ?: true
     val hasConfig: Boolean get() = !configJson.isNullOrEmpty()
 }
 

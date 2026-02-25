@@ -17,11 +17,11 @@ val appModule = module {
     
     // UserPreferences
     single { UserPreferences(get()) }
-    
-    // Repositories
-    single { FavoritesRepository() }
+
+    // Guest favorites fallback (no-auth mode)
+    single { FavoritesRepository(get()) }
     
     // ViewModels
     viewModel { AppStateViewModel(get()) }
-    viewModel { FavoritesViewModel(get()) }
+    viewModel { FavoritesViewModel(get(), get()) }
 }

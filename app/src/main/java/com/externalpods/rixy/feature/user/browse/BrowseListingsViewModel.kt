@@ -2,18 +2,24 @@ package com.externalpods.rixy.feature.user.browse
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.externalpods.rixy.core.common.ApiError
 import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.core.model.ListingType
+import com.externalpods.rixy.data.repository.FavoritesRepository
+import com.externalpods.rixy.data.repository.OwnerRepository
 import com.externalpods.rixy.domain.usecase.listing.GetListingsUseCase
 import com.externalpods.rixy.navigation.AppStateViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class BrowseListingsUiState(
     val listings: List<Listing> = emptyList(),
+    val favoriteIds: Set<String> = emptySet(),
+    val loadingFavoriteIds: Set<String> = emptySet(),
     val searchQuery: String = "",
     val selectedType: ListingType? = null,
     val selectedCategory: String? = null,
@@ -26,6 +32,8 @@ data class BrowseListingsUiState(
 
 class BrowseListingsViewModel(
     private val getListingsUseCase: GetListingsUseCase,
+    private val ownerRepository: OwnerRepository,
+    private val favoritesRepository: FavoritesRepository,
     private val appState: AppStateViewModel,
     private val citySlugParam: String? = null
 ) : ViewModel() {
@@ -40,6 +48,7 @@ class BrowseListingsViewModel(
 
     init {
         loadListings()
+        loadFavoriteIds()
     }
 
     fun loadListings(refresh: Boolean = true) {
@@ -139,6 +148,78 @@ class BrowseListingsViewModel(
             )
         }
         loadListings(refresh = true)
+    }
+
+    fun toggleFavorite(listingId: String) {
+        val state = _uiState.value
+        if (state.loadingFavoriteIds.contains(listingId)) return
+
+        val isCurrentlyFavorite = state.favoriteIds.contains(listingId)
+        val previousIds = state.favoriteIds
+
+        _uiState.update {
+            it.copy(
+                loadingFavoriteIds = it.loadingFavoriteIds + listingId,
+                favoriteIds = if (isCurrentlyFavorite) {
+                    it.favoriteIds - listingId
+                } else {
+                    it.favoriteIds + listingId
+                }
+            )
+        }
+
+        viewModelScope.launch {
+            runCatching {
+                val listing = _uiState.value.listings.firstOrNull { it.id == listingId }
+                if (isCurrentlyFavorite) {
+                    ownerRepository.removeFavorite(listingId)
+                    favoritesRepository.removeFavorite(listingId)
+                } else {
+                    ownerRepository.addFavorite(listingId)
+                    if (listing != null) {
+                        favoritesRepository.addFavorite(listing)
+                    }
+                }
+            }.onFailure { error ->
+                if (error is ApiError.Unauthorized) {
+                    val listing = _uiState.value.listings.firstOrNull { it.id == listingId }
+                    if (isCurrentlyFavorite) {
+                        favoritesRepository.removeFavorite(listingId)
+                    } else if (listing != null) {
+                        favoritesRepository.addFavorite(listing)
+                    }
+                    return@onFailure
+                }
+                _uiState.update {
+                    it.copy(
+                        favoriteIds = previousIds,
+                        error = error.message ?: "No se pudo actualizar favorito"
+                    )
+                }
+            }
+
+            _uiState.update {
+                it.copy(loadingFavoriteIds = it.loadingFavoriteIds - listingId)
+            }
+        }
+    }
+
+    private fun loadFavoriteIds() {
+        viewModelScope.launch {
+            runCatching {
+                ownerRepository.getFavoriteIds().toSet()
+            }.onSuccess { ids ->
+                _uiState.update { it.copy(favoriteIds = ids) }
+            }.onFailure { error ->
+                if (error is ApiError.Unauthorized) {
+                    val localIds = favoritesRepository.getFavorites()
+                        .first()
+                        .map { listing -> listing.id }
+                        .toSet()
+                    _uiState.update { it.copy(favoriteIds = localIds) }
+                }
+            }
+        }
     }
 
     private fun resolveCitySlug(): String? {

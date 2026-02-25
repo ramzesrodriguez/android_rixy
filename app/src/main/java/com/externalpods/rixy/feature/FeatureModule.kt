@@ -30,7 +30,7 @@ val featureModule = module {
     
     // User Mode
     viewModel { CitySelectorViewModel(get(), get()) }
-    viewModel { CityHomeViewModel(get(), get()) }
+    viewModel { CityHomeViewModel(get(), get(), get()) }
     viewModel { params ->
         ListingDetailViewModel(
             getListingDetailUseCase = get(),
@@ -51,6 +51,8 @@ val featureModule = module {
     viewModel { params ->
         BrowseListingsViewModel(
             getListingsUseCase = get(),
+            ownerRepository = get(),
+            favoritesRepository = get(),
             appState = get(),
             citySlugParam = params.getOrNull<String>()
         )

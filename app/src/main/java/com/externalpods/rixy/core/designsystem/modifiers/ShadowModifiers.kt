@@ -152,10 +152,20 @@ fun Modifier.cardShadow(
     elevation: Dp = 6.dp,
     borderRadius: Dp = 16.dp
 ): Modifier = composed {
+    val clampedElevation = elevation.value.coerceIn(2f, 16f)
+    val alpha = (0.06f + (clampedElevation / 100f)).coerceAtMost(0.18f)
+    val blur = (clampedElevation * 1.6f).dp
+    val offsetY = (clampedElevation * 0.8f).dp
+
     iosShadow(
-        style = RixyShadows.Card,
+        style = RixyShadows.custom(
+            color = Color.Black,
+            alpha = alpha,
+            offsetY = offsetY,
+            blurRadius = blur
+        ),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(borderRadius),
-        clip = true
+        clip = false
     )
 }
 

@@ -233,9 +233,16 @@ class OwnerRepositoryImpl(
     }
 
     override suspend fun getFavorites(): List<Listing> {
-        // TODO: Implement API call to get full favorite listings
-        // For now, return empty list to allow compilation
-        return emptyList()
+        return try {
+            val response = ownerApi.getFavorites()
+            if (response.isSuccessful) {
+                response.body()?.data ?: emptyList()
+            } else {
+                throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())
+            }
+        } catch (e: Exception) {
+            throw ApiError.fromThrowable(e)
+        }
     }
 
     // Uploads

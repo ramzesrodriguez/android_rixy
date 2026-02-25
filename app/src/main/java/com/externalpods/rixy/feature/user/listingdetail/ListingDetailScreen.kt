@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,18 +23,19 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
@@ -40,10 +43,13 @@ import com.externalpods.rixy.core.designsystem.components.DSButton
 import com.externalpods.rixy.core.designsystem.components.DSButtonSize
 import com.externalpods.rixy.core.designsystem.components.DSButtonVariant
 import com.externalpods.rixy.core.designsystem.components.DSCard
+import com.externalpods.rixy.core.designsystem.components.DSParallaxToolbar
+import com.externalpods.rixy.core.designsystem.components.DSParallaxToolbarIconButton
 import com.externalpods.rixy.core.designsystem.components.DSSkeleton
 import com.externalpods.rixy.core.designsystem.components.DSTypeBadge
 import com.externalpods.rixy.core.designsystem.components.ErrorViewGeneric
 import com.externalpods.rixy.core.designsystem.components.ListingType
+import com.externalpods.rixy.core.designsystem.components.rememberDSParallaxToolbarState
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.Listing
@@ -62,7 +68,6 @@ import com.externalpods.rixy.core.model.ListingType as ModelListingType
  * - Description section
  * - Contact CTA at bottom
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListingDetailScreen(
     listingId: String,
@@ -75,92 +80,115 @@ fun ListingDetailScreen(
     }
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
+    val density = LocalDensity.current
+    val headerHeightPx = with(density) { LISTING_HEADER_HEIGHT.toPx() }
+    val toolbarState = rememberDSParallaxToolbarState(
+        listState = listState,
+        headerHeightPx = headerHeightPx
+    )
+    val heroParallaxOffset by remember(listState) {
+        derivedStateOf {
+            if (listState.firstVisibleItemIndex == 0) {
+                listState.firstVisibleItemScrollOffset * 0.5f
+            } else {
+                0f
+            }
+        }
+    }
 
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        topBar = {
-            TopAppBar(
-                windowInsets = WindowInsets(0, 0, 0, 0),
-                title = { Text("") },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { viewModel.toggleFavorite() }) {
-                        Icon(
-                            imageVector = if (uiState.isFavorite)
-                                Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                            contentDescription = "Favorite",
-                            tint = if (uiState.isFavorite)
-                                RixyColors.Error else RixyColors.TextPrimary
-                        )
-                    }
-                    IconButton(onClick = onShareClick) {
-                        Icon(
-                            imageVector = Icons.Default.Share,
-                            contentDescription = "Share"
-                        )
-                    }
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            when {
+                uiState.isLoading -> {
+                    ListingDetailLoadingState(
+                        modifier = Modifier.padding(paddingValues)
+                    )
+                }
+                uiState.error != null -> {
+                    ErrorViewGeneric(
+                        message = uiState.error ?: "Error al cargar",
+                        onRetry = { viewModel.loadListing() },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    )
+                }
+                uiState.listing != null -> {
+                    ListingDetailContent(
+                        listing = uiState.listing!!,
+                        listState = listState,
+                        heroParallaxOffsetPx = heroParallaxOffset,
+                        onBusinessClick = onBusinessClick,
+                        onContactClick = { viewModel.onContactClick() },
+                        modifier = Modifier.padding(paddingValues)
+                    )
+                }
+                else -> {
+                    ErrorViewGeneric(
+                        message = "No se pudo cargar el anuncio",
+                        onRetry = { viewModel.loadListing() },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    )
+                }
+            }
+
+            DSParallaxToolbar(
+                title = uiState.listing?.title.orEmpty(),
+                alpha = toolbarState.alpha,
+                isCollapsed = toolbarState.isCollapsed,
+                onBackClick = onBackClick,
+                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                modifier = Modifier.align(Alignment.TopCenter),
+                actions = { iconTint, iconContainerColor ->
+                    DSParallaxToolbarIconButton(
+                        icon = if (uiState.isFavorite) {
+                            Icons.Filled.Favorite
+                        } else {
+                            Icons.Filled.FavoriteBorder
+                        },
+                        contentDescription = "Favorite",
+                        onClick = { viewModel.toggleFavorite() },
+                        iconTint = if (uiState.isFavorite) RixyColors.Error else iconTint,
+                        containerColor = iconContainerColor
+                    )
+                    DSParallaxToolbarIconButton(
+                        icon = Icons.Default.Share,
+                        contentDescription = "Share",
+                        onClick = onShareClick,
+                        iconTint = iconTint,
+                        containerColor = iconContainerColor
+                    )
                 }
             )
-        }
-    ) { paddingValues ->
-        when {
-            uiState.isLoading -> {
-                ListingDetailLoadingState(
-                    modifier = Modifier.padding(paddingValues)
-                )
-            }
-            uiState.error != null -> {
-                ErrorViewGeneric(
-                    message = uiState.error ?: "Error al cargar",
-                    onRetry = { viewModel.loadListing() },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                )
-            }
-            uiState.listing != null -> {
-                ListingDetailContent(
-                    listing = uiState.listing!!,
-                    onBusinessClick = onBusinessClick,
-                    onContactClick = { viewModel.onContactClick() },
-                    modifier = Modifier.padding(paddingValues)
-                )
-            }
-            else -> {
-                ErrorViewGeneric(
-                    message = "No se pudo cargar el anuncio",
-                    onRetry = { viewModel.loadListing() },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                )
-            }
         }
     }
 }
 
+private val LISTING_HEADER_HEIGHT = 300.dp
+
 @Composable
 private fun ListingDetailContent(
     listing: Listing,
+    listState: LazyListState,
+    heroParallaxOffsetPx: Float,
     onBusinessClick: (String) -> Unit,
     onContactClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
+        state = listState
     ) {
         // Image Gallery
         item {
             ImageGallery(
                 images = listing.photoUrls ?: emptyList(),
-                type = mapListingType(listing.type)
+                parallaxOffsetPx = heroParallaxOffsetPx
             )
         }
 
@@ -342,19 +370,23 @@ private fun ListingDetailContent(
 @Composable
 private fun ImageGallery(
     images: List<String>,
-    type: ListingType,
+    parallaxOffsetPx: Float,
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(300.dp)
+            .height(LISTING_HEADER_HEIGHT)
     ) {
         if (images.isNotEmpty()) {
             AsyncImage(
                 model = images.first(),
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        translationY = parallaxOffsetPx
+                    },
                 contentScale = ContentScale.Crop
             )
         } else {
@@ -372,13 +404,6 @@ private fun ImageGallery(
             }
         }
 
-        // Type badge overlay
-        DSTypeBadge(
-            type = type,
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp)
-        )
     }
 }
 

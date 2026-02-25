@@ -29,6 +29,7 @@ fun OrdersScreen(
     onBackClick: (() -> Unit)?
 ) {
     Scaffold(
+        containerColor = RixyColors.White,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
