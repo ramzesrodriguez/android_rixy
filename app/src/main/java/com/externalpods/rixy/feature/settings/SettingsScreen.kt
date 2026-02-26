@@ -20,7 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
+
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,51 +48,47 @@ fun SettingsScreen(
     onLanguageClick: (() -> Unit)? = null,
     onChangeCityClick: () -> Unit = {}
 ) {
-    Scaffold(
-        containerColor = RixyColors.Background,
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .background(RixyColors.Background)
-        ) {
-            DSMainHeader(
-                title = "Perfil",
-                onBackClick = onBackClick
-            )
+    // Note: No Scaffold here - parent (UserTabBarView) already has one
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+            .background(RixyColors.Background)
+    ) {
+        DSMainHeader(
+            title = "Perfil",
+            onBackClick = onBackClick
+        )
 
-            if (isAuthenticated) {
-                AuthenticatedProfileContent(
-                    userEmail = userEmail,
-                    selectedCityName = selectedCityName,
-                    languageLabel = languageLabel,
-                    currentModeLabel = currentModeLabel,
-                    canUseOwnerMode = canUseOwnerMode,
-                    onModeChanged = onModeChanged,
-                    onSignOut = onSignOut,
-                    onLanguageClick = onLanguageClick,
-                    onChangeCityClick = onChangeCityClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(bottom = 100.dp)
-                )
-            } else {
-                GuestProfileContent(
-                    selectedCityName = selectedCityName,
-                    languageLabel = languageLabel,
-                    onNavigateToLogin = onNavigateToLogin,
-                    onLanguageClick = onLanguageClick,
-                    onChangeCityClick = onChangeCityClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(vertical = 12.dp)
-                        .padding(bottom = 100.dp)
-                )
-            }
+        if (isAuthenticated) {
+            AuthenticatedProfileContent(
+                userEmail = userEmail,
+                selectedCityName = selectedCityName,
+                languageLabel = languageLabel,
+                currentModeLabel = currentModeLabel,
+                canUseOwnerMode = canUseOwnerMode,
+                onModeChanged = onModeChanged,
+                onSignOut = onSignOut,
+                onLanguageClick = onLanguageClick,
+                onChangeCityClick = onChangeCityClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 80.dp)
+            )
+        } else {
+            GuestProfileContent(
+                selectedCityName = selectedCityName,
+                languageLabel = languageLabel,
+                onNavigateToLogin = onNavigateToLogin,
+                onLanguageClick = onLanguageClick,
+                onChangeCityClick = onChangeCityClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 12.dp)
+                    .padding(bottom = 80.dp)
+            )
         }
     }
 }

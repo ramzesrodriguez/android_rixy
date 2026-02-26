@@ -6,6 +6,8 @@ import com.externalpods.rixy.core.model.CitySlotSubscription
 import com.externalpods.rixy.core.model.CitySlotType
 import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.core.model.PublicCitySlot
+import com.externalpods.rixy.core.model.SlotPricingItem
+import com.externalpods.rixy.core.model.SlotDetail
 import com.externalpods.rixy.data.repository.CityRepository
 import com.externalpods.rixy.data.repository.OwnerRepository
 import com.externalpods.rixy.core.model.CitySlot
@@ -16,26 +18,40 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class AvailableSlot(
-    val cityId: String,
-    val cityName: String,
-    val type: CitySlotType,
-    val slotIndex: Int,
-    val basePriceCents: Int,
-    val currency: String
+// Individual slot info for display
+data class SlotInfo(
+    val index: Int,
+    val isAvailable: Boolean,
+    val businessName: String? = null,
+    val endAt: String? = null,
+    val subscriptionId: String? = null
 )
+
+// Grouped slots by type
+data class SlotTypeGroup(
+    val type: CitySlotType,
+    val description: String,
+    val basePriceCents: Int,
+    val currency: String,
+    val totalSlots: Int,
+    val slots: List<SlotInfo>
+) {
+    val formattedPrice: String get() = "${currency}$${basePriceCents / 100.0}"
+}
 
 data class OwnerCitySlotsUiState(
     val subscriptions: List<CitySlotSubscription> = emptyList(),
     val publicSlots: List<PublicCitySlot> = emptyList(),
-    val availableSlots: List<AvailableSlot> = emptyList(), // Available slots for purchase
+    val availableSlots: List<AvailableSlot> = emptyList(),
+    val slotTypeGroups: List<SlotTypeGroup> = emptyList(), // New grouped slots
     val ownerListings: List<Listing> = emptyList(),
     val pendingPurchaseSlot: AvailableSlot? = null,
     val showListingPicker: Boolean = false,
     val isLoading: Boolean = false,
     val isCreatingCheckout: Boolean = false,
     val error: String? = null,
-    val checkoutUrl: String? = null
+    val checkoutUrl: String? = null,
+    val selectedCityName: String = ""
 )
 
 class OwnerCitySlotsViewModel(
@@ -66,35 +82,66 @@ class OwnerCitySlotsViewModel(
                 val cityIdForCheckout = selectedCity?.id ?: business?.cityId ?: subscriptions.firstOrNull()?.cityId
                 val citySlugForAvailability = selectedCity?.slug ?: business?.city?.slug
                 val citySlugForPublicSlots = selectedCity?.slug ?: business?.city?.slug
+                val cityName = selectedCity?.name ?: business?.city?.name ?: "Ciudad"
 
-                val availableSlots = if (citySlugForAvailability.isNullOrBlank() || cityIdForCheckout.isNullOrBlank()) {
-                    emptyList()
+                // Load slot availability and public slots
+                val availability = if (citySlugForAvailability.isNullOrBlank() || cityIdForCheckout.isNullOrBlank()) {
+                    null
                 } else {
-                    val availability = ownerRepository.getCitySlotAvailability(citySlugForAvailability)
-                    val pricingByType = availability.pricing.associateBy { it.slotType }
-                    availability.slots.flatMap { slotTypeAvailability ->
-                        slotTypeAvailability.slots
-                            .filter { it.isAvailable }
-                            .map { slotDetail ->
-                            val pricing = pricingByType[slotTypeAvailability.slotType]
-                            AvailableSlot(
-                                cityId = cityIdForCheckout,
-                                cityName = selectedCity?.name
-                                    ?: subscriptions.firstOrNull { it.cityId == cityIdForCheckout }?.cityName
-                                    ?: "Ciudad",
-                                type = slotTypeAvailability.slotType,
-                                slotIndex = slotDetail.index,
-                                basePriceCents = pricing?.basePriceCents ?: 0,
-                                currency = pricing?.currency ?: "MXN"
-                            )
-                        }
-                    }
+                    ownerRepository.getCitySlotAvailability(citySlugForAvailability)
                 }
+                
                 val publicSlots = if (citySlugForPublicSlots.isNullOrBlank()) {
                     emptyList()
                 } else {
                     cityRepository.getCitySlots(citySlugForPublicSlots)
                 }
+
+                // Create pricing map
+                val pricingByType = availability?.pricing?.associateBy { it.slotType } ?: emptyMap()
+                
+                // Create slot type groups from availability.slots and pricing
+                val slotTypeGroups = availability?.slots?.mapNotNull { slotItem ->
+                    val pricing = pricingByType[slotItem.slotType]
+                    if (pricing == null) return@mapNotNull null
+                    
+                    // Build slot info list
+                    val slotInfos = slotItem.slots.map { detail ->
+                        SlotInfo(
+                            index = detail.index,
+                            isAvailable = detail.isAvailable,
+                            businessName = detail.currentSubscription?.businessName,
+                            endAt = detail.currentSubscription?.endAt,
+                            subscriptionId = detail.currentSubscription?.id
+                        )
+                    }.sortedBy { it.index }
+                    
+                    SlotTypeGroup(
+                        type = slotItem.slotType,
+                        description = getDefaultDescription(slotItem.slotType),
+                        basePriceCents = pricing.basePriceCents,
+                        currency = pricing.currency,
+                        totalSlots = pricing.totalSlots,
+                        slots = slotInfos
+                    )
+                }?.sortedBy { it.type.name } ?: emptyList()
+
+                // Create available slots for purchase (legacy format for compatibility)
+                val availableSlots = availability?.slots?.flatMap { slotItem ->
+                    val pricing = pricingByType[slotItem.slotType]
+                    slotItem.slots
+                        .filter { it.isAvailable }
+                        .map { slotDetail ->
+                            AvailableSlot(
+                                cityId = cityIdForCheckout ?: "",
+                                cityName = cityName,
+                                type = slotItem.slotType,
+                                slotIndex = slotDetail.index,
+                                basePriceCents = pricing?.basePriceCents ?: 0,
+                                currency = pricing?.currency ?: "MXN"
+                            )
+                        }
+                } ?: emptyList()
 
                 _uiState.update { 
                     it.copy(
@@ -102,6 +149,8 @@ class OwnerCitySlotsViewModel(
                         publicSlots = publicSlots,
                         ownerListings = listings,
                         availableSlots = availableSlots,
+                        slotTypeGroups = slotTypeGroups,
+                        selectedCityName = cityName,
                         isLoading = false
                     )
                 }
@@ -116,6 +165,20 @@ class OwnerCitySlotsViewModel(
         }
     }
 
+    private fun getDefaultDescription(type: CitySlotType): String {
+        return when (type) {
+            CitySlotType.HOME_HERO_SPOTLIGHT -> "Prime hero position at the top of the homepage"
+            CitySlotType.HOME_HORIZONTAL_CAROUSEL -> "Scrolling carousel section on homepage"
+            CitySlotType.HOME_CATEGORY_RAIL -> "Category rail section on homepage"
+            CitySlotType.HOME_GRID_1 -> "Grid section position 1 on homepage"
+            CitySlotType.HOME_GRID_2 -> "Grid section position 2 on homepage"
+            CitySlotType.HOME_EVENTS_STRIP -> "Events strip section on homepage"
+            CitySlotType.HOME_NEW_ARRIVALS -> "New arrivals section on homepage"
+            CitySlotType.HOME_FEATURED_PLACEMENT -> "Featured placement section on homepage"
+            CitySlotType.UNKNOWN -> "City slot"
+        }
+    }
+
     fun cancelSubscription(subscriptionId: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -127,6 +190,50 @@ class OwnerCitySlotsViewModel(
                 _uiState.update { 
                     it.copy(
                         isLoading = false,
+                        error = e.message
+                    )
+                }
+            }
+        }
+    }
+
+    fun retryPayment(subscriptionId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCreatingCheckout = true, error = null) }
+            
+            try {
+                val response = ownerRepository.retryCitySlotPayment(subscriptionId)
+                response.checkoutUrl?.let { url ->
+                    _uiState.update { it.copy(checkoutUrl = url, isCreatingCheckout = false) }
+                } ?: run {
+                    _uiState.update { it.copy(isCreatingCheckout = false, error = "No checkout URL received") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(
+                        isCreatingCheckout = false,
+                        error = e.message
+                    )
+                }
+            }
+        }
+    }
+
+    fun renewSubscription(subscriptionId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCreatingCheckout = true, error = null) }
+            
+            try {
+                val response = ownerRepository.renewCitySlotSubscription(subscriptionId)
+                response.checkoutUrl?.let { url ->
+                    _uiState.update { it.copy(checkoutUrl = url, isCreatingCheckout = false) }
+                } ?: run {
+                    _uiState.update { it.copy(isCreatingCheckout = false, error = "No checkout URL received") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(
+                        isCreatingCheckout = false,
                         error = e.message
                     )
                 }
@@ -199,3 +306,12 @@ class OwnerCitySlotsViewModel(
         }
     }
 }
+
+data class AvailableSlot(
+    val cityId: String,
+    val cityName: String,
+    val type: CitySlotType,
+    val slotIndex: Int,
+    val basePriceCents: Int,
+    val currency: String
+)

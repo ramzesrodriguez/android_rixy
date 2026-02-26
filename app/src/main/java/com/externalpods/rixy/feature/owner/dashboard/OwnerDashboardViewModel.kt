@@ -21,7 +21,10 @@ data class OwnerDashboardUiState(
     val ownerName: String? = null,
     val publishedCount: Int = 0,
     val draftCount: Int = 0,
+    val pendingCount: Int = 0,
     val featuredCount: Int = 0,
+    val totalViews: Int = 0,
+    val uniqueVisitors: Int = 0,
     val recentListings: List<Listing> = emptyList(),
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
@@ -48,7 +51,13 @@ class OwnerDashboardViewModel(
                 // Load analytics
                 getAnalyticsUseCase(days = 30)
                     .onSuccess { analytics ->
-                        _uiState.update { it.copy(analytics = analytics) }
+                        _uiState.update { 
+                            it.copy(
+                                analytics = analytics,
+                                totalViews = analytics.totals.totalViews,
+                                uniqueVisitors = analytics.totals.uniqueVisitors
+                            )
+                        }
                     }
                 
                 // Load business
@@ -59,6 +68,7 @@ class OwnerDashboardViewModel(
                 val listings = ownerRepository.getListings()
                 val publishedCount = listings.count { it.status == ListingStatus.PUBLISHED }
                 val draftCount = listings.count { it.status == ListingStatus.DRAFT }
+                val pendingCount = listings.count { it.status == ListingStatus.PENDING_REVIEW }
                 val featuredCount = listings.count { listing ->
                     listing.isFeatured == true || (listing.paymentTransactions?.isNotEmpty() == true)
                 }
@@ -69,6 +79,7 @@ class OwnerDashboardViewModel(
                         ownerName = business?.name ?: business?.ownerName,
                         publishedCount = publishedCount,
                         draftCount = draftCount,
+                        pendingCount = pendingCount,
                         featuredCount = featuredCount,
                         recentListings = listings.take(5),
                         isLoading = false
@@ -92,13 +103,20 @@ class OwnerDashboardViewModel(
             try {
                 getAnalyticsUseCase(days = 30)
                     .onSuccess { analytics ->
-                        _uiState.update { it.copy(analytics = analytics) }
+                        _uiState.update { 
+                            it.copy(
+                                analytics = analytics,
+                                totalViews = analytics.totals.totalViews,
+                                uniqueVisitors = analytics.totals.uniqueVisitors
+                            )
+                        }
                     }
                 
                 val listings = ownerRepository.getListings()
                 val business = _uiState.value.business
                 val publishedCount = listings.count { it.status == ListingStatus.PUBLISHED }
                 val draftCount = listings.count { it.status == ListingStatus.DRAFT }
+                val pendingCount = listings.count { it.status == ListingStatus.PENDING_REVIEW }
                 val featuredCount = listings.count { listing ->
                     listing.isFeatured == true || (listing.paymentTransactions?.isNotEmpty() == true)
                 }
@@ -109,6 +127,7 @@ class OwnerDashboardViewModel(
                         ownerName = business?.name ?: business?.ownerName,
                         publishedCount = publishedCount,
                         draftCount = draftCount,
+                        pendingCount = pendingCount,
                         featuredCount = featuredCount,
                         recentListings = listings.take(5),
                         isRefreshing = false
