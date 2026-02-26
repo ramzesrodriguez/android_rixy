@@ -3,7 +3,6 @@ package com.externalpods.rixy.feature.owner.cityslots
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -103,6 +102,33 @@ fun OwnerCitySlotsScreen(
                             Spacer(Modifier.height(8.dp))
                         }
                     }
+
+                    if (uiState.publicSlots.isNotEmpty()) {
+                        item {
+                            Spacer(Modifier.height(16.dp))
+                            Text("Slots ocupados en ciudad", style = RixyTypography.H4, color = RixyColors.TextPrimary)
+                            Spacer(Modifier.height(8.dp))
+                        }
+                        items(
+                            items = uiState.publicSlots.sortedWith(compareBy({ it.slotType.name }, { it.slotIndex })),
+                            key = { it.id }
+                        ) { slot ->
+                            CitySlotOccupancyCard(slot = slot)
+                            Spacer(Modifier.height(8.dp))
+                        }
+                    }
+
+                    if (uiState.subscriptions.isEmpty() && uiState.availableSlots.isEmpty() && uiState.publicSlots.isEmpty()) {
+                        item {
+                            EmptyStateView(
+                                title = "Sin datos de slots",
+                                subtitle = "No encontramos disponibilidad ni ocupación para esta ciudad.",
+                                modifier = Modifier
+                                    .fillParentMaxWidth()
+                                    .padding(top = 24.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -116,6 +142,41 @@ fun OwnerCitySlotsScreen(
                 viewModel.purchaseSelectedSlot(listing.id)
             }
         )
+    }
+}
+
+@Composable
+private fun CitySlotOccupancyCard(
+    slot: com.externalpods.rixy.core.model.PublicCitySlot
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = RixyColors.Surface)
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = "${slot.slotType.displayName} #${slot.slotIndex + 1}",
+                    style = RixyTypography.BodyMedium
+                )
+                Text(
+                    text = slot.subscription?.status?.name ?: "ACTIVO",
+                    style = RixyTypography.Caption,
+                    color = RixyColors.TextSecondary
+                )
+                slot.subscription?.endAt?.let { endAt ->
+                    Text(
+                        text = "Hasta $endAt",
+                        style = RixyTypography.Caption,
+                        color = RixyColors.TextSecondary
+                    )
+                }
+            }
+            ActiveBadge(isActive = slot.isActive)
+        }
     }
 }
 

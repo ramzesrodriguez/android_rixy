@@ -46,8 +46,7 @@ interface OwnerRepository {
     suspend fun deleteBusinessSection(sectionId: String)
     
     // City Slots
-    suspend fun getCitySlots(): List<CitySlotSubscription>
-    suspend fun getCitySlotAvailability(cityId: String): CitySlotAvailabilityResponse
+    suspend fun getCitySlotAvailability(citySlug: String): CitySlotAvailabilityResponse
     suspend fun getCitySlotSubscriptions(): List<CitySlotSubscription>
     suspend fun getCitySlotSubscriptionHistory(): List<CitySlotSubscription>
     suspend fun createCitySlotCheckout(request: CreateCitySlotCheckoutRequest): CitySlotCheckoutResponse
@@ -385,23 +384,9 @@ class OwnerRepositoryImpl(
         }
     }
 
-    // City Slots
-    override suspend fun getCitySlots(): List<CitySlotSubscription> {
+    override suspend fun getCitySlotAvailability(citySlug: String): CitySlotAvailabilityResponse {
         return try {
-            val response = ownerApi.getCitySlots()
-            if (response.isSuccessful) {
-                response.body()?.data ?: emptyList()
-            } else {
-                throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())
-            }
-        } catch (e: Exception) {
-            throw ApiError.fromThrowable(e)
-        }
-    }
-
-    override suspend fun getCitySlotAvailability(cityId: String): CitySlotAvailabilityResponse {
-        return try {
-            val response = ownerApi.getCitySlotAvailability(cityId)
+            val response = ownerApi.getCitySlotAvailability(citySlug)
             if (response.isSuccessful) {
                 response.body()?.data ?: throw ApiError.NotFound("Slot availability not found")
             } else {

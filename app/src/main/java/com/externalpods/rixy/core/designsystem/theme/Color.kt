@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
 // ============================================================================
 
 object RixyColors {
-    
+
     // Core Palette
     val Structure = Color(0xFF1D1D1F)
     val Brand = Color(0xFFE61E4D)
@@ -16,52 +16,51 @@ object RixyColors {
     val Action = Color(0xFF06B6D4)
     val Monetization = Color(0xFFFF9F1C)
     val Community = Color(0xFF7C9A92)
-    
+
     // White & Black
     val White = Color(0xFFFFFFFF)
     val Black = Color(0xFF000000)
-    
-    // Neutrals (Light Mode)
-    // iOS-like grouped background (cool light gray)
-    val Background = Color(0xFFF2F2F7)
+
+    // Neutrals (Light Mode))
+    val Background = Color(0xFFF7F7F7)
     val Surface = Color(0xFFFFFFFF)
-    val SurfaceVariant = Color(0xFFF3F4F6)
+    val SurfaceVariant = Color(0xFFEBEBEB)
     val Border = Color(0xFFE5E7EB)
     val TextPrimary = Color(0xFF111827)
     val TextSecondary = Color(0xFF6B7280)
     val TextTertiary = Color(0xFF9CA3AF)
-    
+
     // Dark Mode
     val BackgroundDark = Color(0xFF0F172A)
     val SurfaceDark = Color(0xFF1E293B)
     val BorderDark = Color(0xFF94A3B8)
     val TextPrimaryDark = Color(0xFFF8FAFC)
     val TextSecondaryDark = Color(0xFFCBD5E1)
-    
+
     // Status Colors
     val Success = Color(0xFF22C55E)
     val Warning = Color(0xFFF59E0B)
     val Error = Color(0xFFEF4444)
     val Info = Color(0xFF3B82F6)
-    
+
     // Type Colors
     val Product = Color(0xFF3B82F6)      // Blue
     val Service = Color(0xFFA855F7)      // Purple
     val Event = Color(0xFFEC4899)        // Pink
-    
+
     // Listing Status Colors
     val StatusDraft = Color(0xFF9CA3AF)
     val StatusPending = Color(0xFFF59E0B)
     val StatusPublished = Color(0xFF22C55E)
     val StatusRejected = Color(0xFFEF4444)
     val StatusSuspended = Color(0xFF6B7280)
-    
+
     // Featured/Slot Status
     val SlotActive = Color(0xFF22C55E)
     val SlotPending = Color(0xFFF59E0B)
     val SlotExpired = Color(0xFF9CA3AF)
     val SlotPaused = Color(0xFF6B7280)
-    
+
     // Opacity variations
     fun Brand(alpha: Float) = Brand.copy(alpha = alpha)
     fun Structure(alpha: Float) = Structure.copy(alpha = alpha)

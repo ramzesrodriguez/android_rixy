@@ -19,15 +19,30 @@ class TokenManager(context: Context) {
         prefs.edit().putString(KEY_AUTH_TOKEN, token).apply()
     }
 
+    fun saveSession(accessToken: String, refreshToken: String?) {
+        prefs.edit()
+            .putString(KEY_AUTH_TOKEN, accessToken)
+            .putString(KEY_REFRESH_TOKEN, refreshToken)
+            .apply()
+    }
+
     fun getToken(): String? {
         return prefs.getString(KEY_AUTH_TOKEN, null)
     }
 
     fun clearToken() {
-        prefs.edit().remove(KEY_AUTH_TOKEN).apply()
+        prefs.edit()
+            .remove(KEY_AUTH_TOKEN)
+            .remove(KEY_REFRESH_TOKEN)
+            .apply()
+    }
+
+    fun getRefreshToken(): String? {
+        return prefs.getString(KEY_REFRESH_TOKEN, null)
     }
 
     companion object {
         private const val KEY_AUTH_TOKEN = "auth_token"
+        private const val KEY_REFRESH_TOKEN = "refresh_token"
     }
 }

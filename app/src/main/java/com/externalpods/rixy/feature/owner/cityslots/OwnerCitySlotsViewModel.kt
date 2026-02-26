@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.externalpods.rixy.core.model.CitySlotSubscription
 import com.externalpods.rixy.core.model.CitySlotType
 import com.externalpods.rixy.core.model.Listing
+import com.externalpods.rixy.core.model.PublicCitySlot
+import com.externalpods.rixy.data.repository.CityRepository
 import com.externalpods.rixy.data.repository.OwnerRepository
 import com.externalpods.rixy.core.model.CitySlot
 import com.externalpods.rixy.navigation.AppStateViewModel
@@ -25,6 +27,7 @@ data class AvailableSlot(
 
 data class OwnerCitySlotsUiState(
     val subscriptions: List<CitySlotSubscription> = emptyList(),
+    val publicSlots: List<PublicCitySlot> = emptyList(),
     val availableSlots: List<AvailableSlot> = emptyList(), // Available slots for purchase
     val ownerListings: List<Listing> = emptyList(),
     val pendingPurchaseSlot: AvailableSlot? = null,
@@ -37,6 +40,7 @@ data class OwnerCitySlotsUiState(
 
 class OwnerCitySlotsViewModel(
     private val ownerRepository: OwnerRepository,
+    private val cityRepository: CityRepository,
     private val appState: AppStateViewModel
 ) : ViewModel() {
 
@@ -52,38 +56,50 @@ class OwnerCitySlotsViewModel(
             _uiState.update { it.copy(isLoading = true, error = null) }
             
             try {
-                val subscriptions = ownerRepository.getCitySlots()
+                val business = ownerRepository.getBusiness()
                 val listings = ownerRepository.getListings()
                     .filter { it.isActive == true }
+                val subscriptions = runCatching { ownerRepository.getCitySlotSubscriptions() }
+                    .getOrDefault(emptyList())
 
-                val selectedCityId = appState.selectedCity.value?.id
-                val cityIdForAvailability = selectedCityId ?: subscriptions.firstOrNull()?.cityId
+                val selectedCity = appState.selectedCity.value
+                val cityIdForCheckout = selectedCity?.id ?: business?.cityId ?: subscriptions.firstOrNull()?.cityId
+                val citySlugForAvailability = selectedCity?.slug ?: business?.city?.slug
+                val citySlugForPublicSlots = selectedCity?.slug ?: business?.city?.slug
 
-                val availableSlots = if (cityIdForAvailability.isNullOrBlank()) {
+                val availableSlots = if (citySlugForAvailability.isNullOrBlank() || cityIdForCheckout.isNullOrBlank()) {
                     emptyList()
                 } else {
-                    val availability = ownerRepository.getCitySlotAvailability(cityIdForAvailability)
+                    val availability = ownerRepository.getCitySlotAvailability(citySlugForAvailability)
                     val pricingByType = availability.pricing.associateBy { it.slotType }
-                    availability.slotTypesAvailability.flatMap { slotTypeAvailability ->
-                        slotTypeAvailability.availableIndices.map { index ->
+                    availability.slots.flatMap { slotTypeAvailability ->
+                        slotTypeAvailability.slots
+                            .filter { it.isAvailable }
+                            .map { slotDetail ->
                             val pricing = pricingByType[slotTypeAvailability.slotType]
                             AvailableSlot(
-                                cityId = cityIdForAvailability,
-                                cityName = appState.selectedCity.value?.name
-                                    ?: subscriptions.firstOrNull { it.cityId == cityIdForAvailability }?.cityName
+                                cityId = cityIdForCheckout,
+                                cityName = selectedCity?.name
+                                    ?: subscriptions.firstOrNull { it.cityId == cityIdForCheckout }?.cityName
                                     ?: "Ciudad",
                                 type = slotTypeAvailability.slotType,
-                                slotIndex = index,
-                                basePriceCents = pricing?.basePriceCents ?: slotTypeAvailability.basePriceCents,
-                                currency = pricing?.currency ?: slotTypeAvailability.currency
+                                slotIndex = slotDetail.index,
+                                basePriceCents = pricing?.basePriceCents ?: 0,
+                                currency = pricing?.currency ?: "MXN"
                             )
                         }
                     }
+                }
+                val publicSlots = if (citySlugForPublicSlots.isNullOrBlank()) {
+                    emptyList()
+                } else {
+                    cityRepository.getCitySlots(citySlugForPublicSlots)
                 }
 
                 _uiState.update { 
                     it.copy(
                         subscriptions = subscriptions,
+                        publicSlots = publicSlots,
                         ownerListings = listings,
                         availableSlots = availableSlots,
                         isLoading = false

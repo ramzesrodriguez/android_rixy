@@ -56,12 +56,14 @@ import com.externalpods.rixy.feature.user.cityselector.CitySelectorViewModel
 import com.externalpods.rixy.feature.user.favorites.FavoritesScreen
 import com.externalpods.rixy.feature.user.orders.OrdersScreen
 import com.externalpods.rixy.feature.settings.SettingsScreen
+import com.externalpods.rixy.feature.settings.ModePickerSheet
 import com.externalpods.rixy.feature.user.browse.BrowseListingsScreen
 import com.externalpods.rixy.feature.user.businessprofile.BusinessProfileScreen
 import com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreen
 import com.externalpods.rixy.navigation.AppStateViewModel
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.foundation.layout.WindowInsets
 
 /**
  * UserTabBarView - iOS-style Tab Bar (mirrors iOS UserTabBarView)
@@ -366,6 +368,7 @@ fun ProfileTab(
     val citySelectorUiState by citySelectorViewModel.uiState.collectAsStateWithLifecycle()
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showCityDialog by remember { mutableStateOf(false) }
+    var showModeDialog by remember { mutableStateOf(false) }
     val canUseOwnerMode = isAuthenticated && (
         currentUser?.role == com.externalpods.rixy.core.model.OwnerRole.OWNER ||
             currentUser?.role == com.externalpods.rixy.core.model.OwnerRole.ADMIN
@@ -381,13 +384,16 @@ fun ProfileTab(
                 selectedCityName = selectedCity?.name,
                 userEmail = settingsUiState.userEmail.takeIf { it.isNotBlank() },
                 languageLabel = settingsUiState.languageLabel,
+                currentModeLabel = when (settingsUiState.currentMode) {
+                    com.externalpods.rixy.core.model.AppMode.USER -> "Usuario"
+                    com.externalpods.rixy.core.model.AppMode.OWNER -> "Negocio"
+                    com.externalpods.rixy.core.model.AppMode.ADMIN -> "Administrador"
+                },
                 canUseOwnerMode = canUseOwnerMode,
                 onNavigateToLogin = {
                     navController.navigate("login")
                 },
-                onModeChanged = { 
-                    settingsViewModel.switchMode(com.externalpods.rixy.core.model.AppMode.OWNER)
-                },
+                onModeChanged = { showModeDialog = true },
                 onSignOut = settingsViewModel::signOut,
                 onBackClick = null,
                 onLanguageClick = { showLanguageDialog = true },
@@ -446,6 +452,25 @@ fun ProfileTab(
             },
             onRetry = citySelectorViewModel::refresh,
             onDismiss = { showCityDialog = false }
+        )
+    }
+
+    if (showModeDialog) {
+        val availableModes = buildList {
+            add(com.externalpods.rixy.core.model.AppMode.USER)
+            if (canUseOwnerMode) add(com.externalpods.rixy.core.model.AppMode.OWNER)
+            if (currentUser?.role == com.externalpods.rixy.core.model.OwnerRole.ADMIN) {
+                add(com.externalpods.rixy.core.model.AppMode.ADMIN)
+            }
+        }
+        ModePickerSheet(
+            selectedMode = settingsUiState.currentMode,
+            availableModes = availableModes,
+            onSelectMode = { mode ->
+                settingsViewModel.switchMode(mode)
+                showModeDialog = false
+            },
+            onDismiss = { showModeDialog = false }
         )
     }
 }

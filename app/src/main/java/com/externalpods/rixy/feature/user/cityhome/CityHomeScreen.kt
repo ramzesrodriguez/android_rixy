@@ -143,7 +143,7 @@ private fun CityHomeContent(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 32.dp)
+        contentPadding = PaddingValues(top = 16.dp, bottom = 0.dp)
     ) {
         if (isLoading) {
             // Loading State
@@ -247,7 +247,7 @@ private fun CityHomeContent(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
 
@@ -420,6 +420,7 @@ private fun BannerSlotCard(
             .width(320.dp)
             .height(120.dp)
             .clip(RoundedCornerShape(16.dp))
+            .background(RixyColors.Surface)
             .clickable(onClick = onClick)
     ) {
         DSAsyncImage(

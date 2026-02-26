@@ -47,9 +47,13 @@ class AuthService(
                 this.email = email
                 this.password = password
             }
-            val token = supabase.auth.currentSessionOrNull()?.accessToken
+            val session = supabase.auth.currentSessionOrNull()
+            val token = session?.accessToken
             if (token != null) {
-                tokenManager.saveToken(token)
+                tokenManager.saveSession(
+                    accessToken = token,
+                    refreshToken = session.refreshToken
+                )
             }
             val user = ownerRepository.getProfile()
             runCatching { favoritesRepository.syncLocalToRemote(ownerRepository) }
@@ -108,9 +112,13 @@ class AuthService(
             // Token may be expired — try refreshing
             try {
                 supabase.auth.refreshCurrentSession()
-                val newToken = supabase.auth.currentSessionOrNull()?.accessToken
+                val refreshedSession = supabase.auth.currentSessionOrNull()
+                val newToken = refreshedSession?.accessToken
                 if (newToken != null) {
-                    tokenManager.saveToken(newToken)
+                    tokenManager.saveSession(
+                        accessToken = newToken,
+                        refreshToken = refreshedSession.refreshToken
+                    )
                     val user = ownerRepository.getProfile()
                     _authState.value = AuthState.Authenticated(user)
                 } else {

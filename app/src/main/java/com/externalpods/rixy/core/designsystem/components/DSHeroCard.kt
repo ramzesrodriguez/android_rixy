@@ -193,7 +193,6 @@ fun DSCityHeroSection(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(200.dp)
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(24.dp))
             .background(
@@ -204,12 +203,12 @@ fun DSCityHeroSection(
                     )
                 )
             )
-            .padding(24.dp)
+            .padding(horizontal = 24.dp, vertical = 20.dp),
+        contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // City name
             Text(

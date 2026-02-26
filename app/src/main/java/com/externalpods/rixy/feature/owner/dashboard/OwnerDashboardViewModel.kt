@@ -59,7 +59,9 @@ class OwnerDashboardViewModel(
                 val listings = ownerRepository.getListings()
                 val publishedCount = listings.count { it.status == ListingStatus.PUBLISHED }
                 val draftCount = listings.count { it.status == ListingStatus.DRAFT }
-                val featuredCount = listings.count { it.isFeatured == true }
+                val featuredCount = listings.count { listing ->
+                    listing.isFeatured == true || (listing.paymentTransactions?.isNotEmpty() == true)
+                }
                 
                 _uiState.update { 
                     it.copy(
@@ -97,7 +99,9 @@ class OwnerDashboardViewModel(
                 val business = _uiState.value.business
                 val publishedCount = listings.count { it.status == ListingStatus.PUBLISHED }
                 val draftCount = listings.count { it.status == ListingStatus.DRAFT }
-                val featuredCount = listings.count { it.isFeatured == true }
+                val featuredCount = listings.count { listing ->
+                    listing.isFeatured == true || (listing.paymentTransactions?.isNotEmpty() == true)
+                }
                 
                 _uiState.update { 
                     it.copy(

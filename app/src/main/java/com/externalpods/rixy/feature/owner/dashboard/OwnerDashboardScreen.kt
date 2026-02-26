@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Campaign
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Store
@@ -304,7 +305,7 @@ private fun ActionRow(
                     Text(it, style = RixyTypography.Caption, color = RixyColors.TextSecondary)
                 }
             }
-            Text(">", style = RixyTypography.H4, color = Color.Gray)
+            Icon(Icons.Default.ChevronRight, null, tint = RixyColors.Brand)
         }
     }
 }
