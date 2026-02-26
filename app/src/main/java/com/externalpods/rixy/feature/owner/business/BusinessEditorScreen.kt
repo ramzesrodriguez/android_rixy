@@ -78,10 +78,8 @@ fun BusinessEditorScreen(
     }
     
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = {
                     Text(text = if (isEditing) "Editar Negocio" else "Crear Negocio",
                         style = RixyTypography.H4

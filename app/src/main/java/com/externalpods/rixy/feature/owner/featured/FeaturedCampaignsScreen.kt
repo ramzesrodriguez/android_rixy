@@ -1,5 +1,7 @@
 package com.externalpods.rixy.feature.owner.featured
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.WindowInsets
@@ -9,9 +11,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.externalpods.rixy.core.designsystem.components.*
@@ -28,12 +32,22 @@ fun FeaturedCampaignsScreen(
     viewModel: FeaturedCampaignsViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    LaunchedEffect(uiState.checkoutUrl) {
+        val checkoutUrl = uiState.checkoutUrl ?: return@LaunchedEffect
+        runCatching {
+            context.startActivity(
+                Intent(Intent.ACTION_VIEW, Uri.parse(checkoutUrl))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            )
+        }
+        viewModel.onCheckoutCancelled()
+    }
     
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Destacados", style = RixyTypography.H4) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {

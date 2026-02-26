@@ -4,9 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.externalpods.rixy.core.model.CitySlotSubscription
 import com.externalpods.rixy.core.model.CitySlotType
+import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.data.repository.OwnerRepository
 import com.externalpods.rixy.core.model.CitySlot
-import com.externalpods.rixy.navigation.AppState
+import com.externalpods.rixy.navigation.AppStateViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,6 +26,9 @@ data class AvailableSlot(
 data class OwnerCitySlotsUiState(
     val subscriptions: List<CitySlotSubscription> = emptyList(),
     val availableSlots: List<AvailableSlot> = emptyList(), // Available slots for purchase
+    val ownerListings: List<Listing> = emptyList(),
+    val pendingPurchaseSlot: AvailableSlot? = null,
+    val showListingPicker: Boolean = false,
     val isLoading: Boolean = false,
     val isCreatingCheckout: Boolean = false,
     val error: String? = null,
@@ -33,7 +37,7 @@ data class OwnerCitySlotsUiState(
 
 class OwnerCitySlotsViewModel(
     private val ownerRepository: OwnerRepository,
-    private val appState: AppState
+    private val appState: AppStateViewModel
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(OwnerCitySlotsUiState())
@@ -49,9 +53,39 @@ class OwnerCitySlotsViewModel(
             
             try {
                 val subscriptions = ownerRepository.getCitySlots()
+                val listings = ownerRepository.getListings()
+                    .filter { it.isActive == true }
+
+                val selectedCityId = appState.selectedCity.value?.id
+                val cityIdForAvailability = selectedCityId ?: subscriptions.firstOrNull()?.cityId
+
+                val availableSlots = if (cityIdForAvailability.isNullOrBlank()) {
+                    emptyList()
+                } else {
+                    val availability = ownerRepository.getCitySlotAvailability(cityIdForAvailability)
+                    val pricingByType = availability.pricing.associateBy { it.slotType }
+                    availability.slotTypesAvailability.flatMap { slotTypeAvailability ->
+                        slotTypeAvailability.availableIndices.map { index ->
+                            val pricing = pricingByType[slotTypeAvailability.slotType]
+                            AvailableSlot(
+                                cityId = cityIdForAvailability,
+                                cityName = appState.selectedCity.value?.name
+                                    ?: subscriptions.firstOrNull { it.cityId == cityIdForAvailability }?.cityName
+                                    ?: "Ciudad",
+                                type = slotTypeAvailability.slotType,
+                                slotIndex = index,
+                                basePriceCents = pricing?.basePriceCents ?: slotTypeAvailability.basePriceCents,
+                                currency = pricing?.currency ?: slotTypeAvailability.currency
+                            )
+                        }
+                    }
+                }
+
                 _uiState.update { 
                     it.copy(
                         subscriptions = subscriptions,
+                        ownerListings = listings,
+                        availableSlots = availableSlots,
                         isLoading = false
                     )
                 }
@@ -97,7 +131,31 @@ class OwnerCitySlotsViewModel(
         _uiState.update { it.copy(error = null) }
     }
 
-    fun purchaseSlot(slot: AvailableSlot, listingId: String) {
+    fun openListingPickerForSlot(slot: AvailableSlot) {
+        _uiState.update {
+            it.copy(
+                pendingPurchaseSlot = slot,
+                showListingPicker = true
+            )
+        }
+    }
+
+    fun dismissListingPicker() {
+        _uiState.update {
+            it.copy(
+                pendingPurchaseSlot = null,
+                showListingPicker = false
+            )
+        }
+    }
+
+    fun purchaseSelectedSlot(listingId: String) {
+        val slot = _uiState.value.pendingPurchaseSlot ?: return
+        dismissListingPicker()
+        purchaseSlot(slot, listingId)
+    }
+
+    private fun purchaseSlot(slot: AvailableSlot, listingId: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isCreatingCheckout = true, error = null) }
             

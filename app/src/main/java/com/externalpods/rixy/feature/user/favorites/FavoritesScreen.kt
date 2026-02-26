@@ -46,7 +46,6 @@ fun FavoritesScreen(
 
     Scaffold(
         containerColor = RixyColors.Background,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         Column(
             modifier = Modifier

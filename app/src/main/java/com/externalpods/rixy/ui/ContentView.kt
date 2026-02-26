@@ -26,7 +26,9 @@ fun ContentView() {
     Crossfade(targetState = currentMode, label = "mode_switch") { mode ->
         when (mode) {
             AppMode.USER -> UserTabBarView(appState = viewModel)
-            AppMode.OWNER -> OwnerDashboardScreen()
+            AppMode.OWNER -> OwnerDashboardScreen(
+                onBackToUser = { viewModel.switchMode(AppMode.USER) }
+            )
             AppMode.ADMIN -> AdminDashboardScreen()
         }
     }

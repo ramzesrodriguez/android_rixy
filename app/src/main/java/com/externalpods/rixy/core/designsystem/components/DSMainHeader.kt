@@ -29,8 +29,7 @@ fun DSMainHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(top = 16.dp, bottom = 12.dp),
+            .padding(bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (onBackClick != null) {

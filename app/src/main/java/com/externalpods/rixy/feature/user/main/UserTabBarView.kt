@@ -19,14 +19,12 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.ShoppingBag
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -50,8 +48,11 @@ import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.feature.auth.LoginScreen
 import com.externalpods.rixy.feature.auth.RegisterScreen
 import com.externalpods.rixy.feature.settings.SettingsViewModel
+import com.externalpods.rixy.feature.settings.CityPickerSheet
+import com.externalpods.rixy.feature.settings.LanguagePickerSheet
 import com.externalpods.rixy.feature.user.cityhome.CityHomeScreen
 import com.externalpods.rixy.feature.user.cityselector.CitySelectorScreen
+import com.externalpods.rixy.feature.user.cityselector.CitySelectorViewModel
 import com.externalpods.rixy.feature.user.favorites.FavoritesScreen
 import com.externalpods.rixy.feature.user.orders.OrdersScreen
 import com.externalpods.rixy.feature.settings.SettingsScreen
@@ -361,7 +362,10 @@ fun ProfileTab(
     val currentUser by appState.currentUser.collectAsStateWithLifecycle()
     val settingsViewModel: SettingsViewModel = koinViewModel()
     val settingsUiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
+    val citySelectorViewModel: CitySelectorViewModel = koinViewModel()
+    val citySelectorUiState by citySelectorViewModel.uiState.collectAsStateWithLifecycle()
     var showLanguageDialog by remember { mutableStateOf(false) }
+    var showCityDialog by remember { mutableStateOf(false) }
     val canUseOwnerMode = isAuthenticated && (
         currentUser?.role == com.externalpods.rixy.core.model.OwnerRole.OWNER ||
             currentUser?.role == com.externalpods.rixy.core.model.OwnerRole.ADMIN
@@ -387,17 +391,7 @@ fun ProfileTab(
                 onSignOut = settingsViewModel::signOut,
                 onBackClick = null,
                 onLanguageClick = { showLanguageDialog = true },
-                onChangeCityClick = { navController.navigate("profile_city_selector") }
-            )
-        }
-
-        composable("profile_city_selector") {
-            CitySelectorScreen(
-                onCitySelected = { city ->
-                    appState.selectCity(city)
-                    navController.popBackStack()
-                },
-                onBackClick = { navController.popBackStack() }
+                onChangeCityClick = { showCityDialog = true }
             )
         }
         
@@ -428,35 +422,30 @@ fun ProfileTab(
     }
 
     if (showLanguageDialog) {
-        AlertDialog(
-            onDismissRequest = { showLanguageDialog = false },
-            title = { Text("Idioma") },
-            text = {
-                androidx.compose.foundation.layout.Column {
-                    TextButton(
-                        onClick = {
-                            settingsViewModel.setLanguage("es")
-                            showLanguageDialog = false
-                        }
-                    ) {
-                        Text("Español")
-                    }
-                    TextButton(
-                        onClick = {
-                            settingsViewModel.setLanguage("en")
-                            showLanguageDialog = false
-                        }
-                    ) {
-                        Text("English")
-                    }
-                }
+        LanguagePickerSheet(
+            selectedLanguageTag = settingsUiState.languageTag,
+            onSelectLanguage = { tag ->
+                settingsViewModel.setLanguage(tag)
+                showLanguageDialog = false
             },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(onClick = { showLanguageDialog = false }) {
-                    Text("Cancelar")
-                }
-            }
+            onDismiss = { showLanguageDialog = false }
+        )
+    }
+
+    if (showCityDialog) {
+        CityPickerSheet(
+            selectedCityId = selectedCity?.id,
+            cities = citySelectorUiState.filteredCities,
+            searchQuery = citySelectorUiState.searchQuery,
+            isLoading = citySelectorUiState.isLoading,
+            error = citySelectorUiState.error,
+            onSearchQueryChange = citySelectorViewModel::onSearchQueryChange,
+            onSelectCity = { city ->
+                appState.selectCity(city)
+                showCityDialog = false
+            },
+            onRetry = citySelectorViewModel::refresh,
+            onDismiss = { showCityDialog = false }
         )
     }
 }

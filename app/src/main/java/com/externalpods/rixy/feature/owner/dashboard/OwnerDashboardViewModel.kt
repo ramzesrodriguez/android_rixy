@@ -3,6 +3,7 @@ package com.externalpods.rixy.feature.owner.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.externalpods.rixy.core.model.Business
+import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.core.model.ListingStatus
 import com.externalpods.rixy.core.model.OwnerAnalyticsOverview
 import com.externalpods.rixy.data.repository.OwnerRepository
@@ -21,6 +22,7 @@ data class OwnerDashboardUiState(
     val publishedCount: Int = 0,
     val draftCount: Int = 0,
     val featuredCount: Int = 0,
+    val recentListings: List<Listing> = emptyList(),
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val error: String? = null
@@ -66,6 +68,7 @@ class OwnerDashboardViewModel(
                         publishedCount = publishedCount,
                         draftCount = draftCount,
                         featuredCount = featuredCount,
+                        recentListings = listings.take(5),
                         isLoading = false
                     )
                 }
@@ -103,6 +106,7 @@ class OwnerDashboardViewModel(
                         publishedCount = publishedCount,
                         draftCount = draftCount,
                         featuredCount = featuredCount,
+                        recentListings = listings.take(5),
                         isRefreshing = false
                     )
                 }

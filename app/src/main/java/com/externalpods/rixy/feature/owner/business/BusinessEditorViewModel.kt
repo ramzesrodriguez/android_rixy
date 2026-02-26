@@ -6,6 +6,7 @@ import com.externalpods.rixy.core.model.Business
 import com.externalpods.rixy.core.network.dto.CreateBusinessRequest
 import com.externalpods.rixy.core.network.dto.UpdateBusinessRequest
 import com.externalpods.rixy.data.repository.OwnerRepository
+import com.externalpods.rixy.navigation.AppStateViewModel
 import com.externalpods.rixy.service.ImageUploadService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -34,7 +35,8 @@ data class BusinessEditorUiState(
 
 class BusinessEditorViewModel(
     private val ownerRepository: OwnerRepository,
-    private val imageUploadService: ImageUploadService
+    private val imageUploadService: ImageUploadService,
+    private val appState: AppStateViewModel
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BusinessEditorUiState())
@@ -144,10 +146,13 @@ class BusinessEditorViewModel(
                 val state = _uiState.value
                 
                 if (state.business == null) {
-                    // Create new business
-                    // Note: cityId should come from selected city or user preference
+                    // Create new business bound to selected city (iOS parity)
+                    val selectedCityId = appState.selectedCity.value?.id
+                    if (selectedCityId.isNullOrBlank()) {
+                        throw IllegalStateException("Selecciona una ciudad antes de crear tu negocio")
+                    }
                     val request = CreateBusinessRequest(
-                        cityId = "", // TODO: Get from app state
+                        cityId = selectedCityId,
                         name = state.name,
                         description = state.description.takeIf { it.isNotBlank() },
                         addressText = state.address.takeIf { it.isNotBlank() },

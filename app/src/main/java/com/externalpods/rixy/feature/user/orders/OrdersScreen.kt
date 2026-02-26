@@ -32,7 +32,6 @@ fun OrdersScreen(
     onBackClick: (() -> Unit)?
 ) {
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             if (onBackClick != null) {
                 TopAppBar(

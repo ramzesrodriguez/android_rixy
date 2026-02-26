@@ -33,10 +33,8 @@ fun ModerationBusinessesScreen(
     var showDialog by remember { mutableStateOf<Business?>(null) }
     
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Moderar Negocios", style = RixyTypography.H4) },
                 navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) } }
             )

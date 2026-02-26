@@ -75,10 +75,8 @@ fun BusinessProfileScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Perfil del Negocio") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {

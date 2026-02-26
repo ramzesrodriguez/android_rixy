@@ -31,10 +31,8 @@ fun UsersManagementScreen(
     var editingUser by remember { mutableStateOf<Owner?>(null) }
     
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Usuarios", style = RixyTypography.H4) },
                 navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) } }
             )

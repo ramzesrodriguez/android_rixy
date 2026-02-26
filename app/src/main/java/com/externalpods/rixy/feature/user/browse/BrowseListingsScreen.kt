@@ -77,7 +77,6 @@ fun BrowseListingsScreen(
     }
     
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             if (onBackClick != null) {
                 DSTopBar(

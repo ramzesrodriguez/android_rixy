@@ -52,9 +52,9 @@ data class CitySlotSubscriptionCountItem(
 
 @Serializable
 data class CitySummary(
-    val id: String,
-    val name: String,
-    val slug: String
+    val id: String? = null,
+    val name: String? = null,
+    val slug: String? = null
 )
 
 @Serializable

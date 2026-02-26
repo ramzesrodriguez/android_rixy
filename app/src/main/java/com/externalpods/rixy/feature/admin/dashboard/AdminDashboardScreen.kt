@@ -28,10 +28,8 @@ fun AdminDashboardScreen(
     onBackToUser: () -> Unit = {}
 ) {
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Panel de Administración", style = RixyTypography.Title3) },
                 navigationIcon = {
                     IconButton(onClick = onBackToUser) {
