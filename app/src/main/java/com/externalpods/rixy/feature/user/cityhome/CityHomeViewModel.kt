@@ -2,24 +2,29 @@ package com.externalpods.rixy.feature.user.cityhome
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.util.Log
 import com.externalpods.rixy.core.model.City
-import com.externalpods.rixy.core.model.CityHome
-import com.externalpods.rixy.core.model.CityHomeSection
+import com.externalpods.rixy.core.model.CitySection
 import com.externalpods.rixy.core.model.Listing
+import com.externalpods.rixy.core.model.PublicCitySlot
+import com.externalpods.rixy.data.repository.CityRepository
 import com.externalpods.rixy.domain.usecase.city.GetCityHomeUseCase
-import com.externalpods.rixy.navigation.AppState
-import com.externalpods.rixy.service.AnalyticsService
+import com.externalpods.rixy.navigation.AppStateViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.intOrNull
 
 data class CityHomeUiState(
     val city: City? = null,
     val featured: Listing? = null,
     val feed: List<Listing> = emptyList(),
-    val sections: List<CityHomeSection> = emptyList(),
+    val sections: List<CitySection> = emptyList(),
+    val sectionItems: Map<String, List<Listing>> = emptyMap(),
+    val slots: List<PublicCitySlot> = emptyList(),
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val error: String? = null
@@ -27,9 +32,12 @@ data class CityHomeUiState(
 
 class CityHomeViewModel(
     private val getCityHomeUseCase: GetCityHomeUseCase,
-    private val analyticsService: AnalyticsService,
-    private val appState: AppState
+    private val cityRepository: CityRepository,
+    private val appState: AppStateViewModel
 ) : ViewModel() {
+    private companion object {
+        const val TAG = "CityHomeViewModel"
+    }
 
     private val _uiState = MutableStateFlow(CityHomeUiState())
     val uiState: StateFlow<CityHomeUiState> = _uiState.asStateFlow()
@@ -48,68 +56,39 @@ class CityHomeViewModel(
             
             getCityHomeUseCase(citySlug)
                 .onSuccess { cityHome ->
-                    _uiState.update { state ->
-                        state.copy(
-                            city = cityHome.city,
-                            featured = cityHome.featured,
-                            feed = cityHome.feed,
-                            sections = cityHome.sections.map { section ->
-                                CityHomeSection(
-                                    id = section.id,
-                                    title = section.title,
-                                    displayType = section.type.name.lowercase().let {
-                                        when {
-                                            it.contains("carousel") || it.contains("rail") -> "horizontal"
-                                            it.contains("grid") -> "grid"
-                                            else -> "horizontal"
-                                        }
-                                    },
-                                    listings = cityHome.feed // Default to feed, can be filtered by section type
-                                )
-                            },
-                            isLoading = false
-                        )
-                    }
-                    // Track view
-                    analyticsService.trackView(citySlug, "CITY_HOME", citySlug)
-                }
-                .onFailure { error ->
-                    _uiState.update { 
-                        it.copy(
-                            isLoading = false,
-                            error = error.message
-                        )
-                    }
-                }
-        }
-    }
+                    val sections = runCatching {
+                        cityRepository.getCitySections(citySlug)
+                    }.getOrElse { emptyList() }
 
-    fun refresh() {
-        val citySlug = _uiState.value.city?.slug ?: return
-        viewModelScope.launch {
-            _uiState.update { it.copy(isRefreshing = true) }
-            
-            getCityHomeUseCase(citySlug)
-                .onSuccess { cityHome ->
+                    val sectionItems = sections.associate { section ->
+                        section.id to runCatching {
+                            val maxItems = (section.configJson?.get("maxItems") as? JsonPrimitive)?.intOrNull
+                            cityRepository.getCitySectionItems(
+                                citySlug = citySlug,
+                                sectionKey = section.key,
+                                limit = maxItems
+                            )
+                        }.getOrElse { emptyList() }
+                    }
+
+                    val slots = runCatching {
+                        cityRepository.getCitySlots(citySlug)
+                    }.getOrElse { emptyList() }
+
+                    Log.d(
+                        TAG,
+                        "Loaded city=$citySlug homeFeed=${cityHome.feed.size} sections=${sections.size} sectionItems=${sectionItems.values.sumOf { it.size }} slots=${slots.size}"
+                    )
+
                     _uiState.update { state ->
                         state.copy(
                             city = cityHome.city,
                             featured = cityHome.featured,
                             feed = cityHome.feed,
-                            sections = cityHome.sections.map { section ->
-                                CityHomeSection(
-                                    id = section.id,
-                                    title = section.title,
-                                    displayType = section.type.name.lowercase().let {
-                                        when {
-                                            it.contains("carousel") || it.contains("rail") -> "horizontal"
-                                            it.contains("grid") -> "grid"
-                                            else -> "horizontal"
-                                        }
-                                    },
-                                    listings = cityHome.feed // Default to feed, can be filtered by section type
-                                )
-                            },
+                            sections = sections.ifEmpty { cityHome.sections },
+                            sectionItems = sectionItems,
+                            slots = slots,
+                            isLoading = false,
                             isRefreshing = false
                         )
                     }
@@ -117,6 +96,7 @@ class CityHomeViewModel(
                 .onFailure { error ->
                     _uiState.update { 
                         it.copy(
+                            isLoading = false,
                             isRefreshing = false,
                             error = error.message
                         )
@@ -125,11 +105,14 @@ class CityHomeViewModel(
         }
     }
 
-    fun onListingClick(listing: Listing) {
-        // Navigation handled by UI layer
+    fun refresh() {
+        _uiState.value.city?.let { city ->
+            _uiState.update { it.copy(isRefreshing = true) }
+            loadCityHome(city.slug)
+        }
     }
 
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
+    fun retry() {
+        _uiState.value.city?.let { loadCityHome(it.slug) }
     }
 }

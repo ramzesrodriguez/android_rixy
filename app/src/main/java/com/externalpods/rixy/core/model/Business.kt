@@ -2,6 +2,7 @@ package com.externalpods.rixy.core.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class Business(
@@ -11,8 +12,12 @@ data class Business(
     val name: String,
     val slug: String? = null,
     val description: String? = null,
-    @SerialName("logo_url") val logoUrl: String? = null,
-    @SerialName("header_image_url") val headerImageUrl: String? = null,
+    @SerialName("logo_url")
+    @JsonNames("logoUrl")
+    val logoUrl: String? = null,
+    @SerialName("header_image_url")
+    @JsonNames("headerImageUrl")
+    val headerImageUrl: String? = null,
     @SerialName("address_text") val addressText: String? = null,
     @SerialName("map_url") val mapUrl: String? = null,
     @SerialName("opening_hours_text") val openingHoursText: String? = null,
@@ -33,7 +38,9 @@ data class Business(
 data class BusinessSummary(
     val id: String,
     val name: String,
-    @SerialName("logo_url") val logoUrl: String? = null
+    @SerialName("logo_url")
+    @JsonNames("logoUrl")
+    val logoUrl: String? = null
 )
 
 @Serializable

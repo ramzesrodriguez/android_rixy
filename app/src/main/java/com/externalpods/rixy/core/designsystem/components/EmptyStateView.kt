@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,8 +48,7 @@ fun EmptyStateView(
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        Text(
-            text = title,
+        Text(text = title,
             style = RixyTypography.H4,
             color = RixyColors.TextPrimary,
             textAlign = TextAlign.Center
@@ -58,8 +56,7 @@ fun EmptyStateView(
         
         subtitle?.let {
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = it,
+            Text(text = it,
                 style = RixyTypography.Body,
                 color = RixyColors.TextSecondary,
                 textAlign = TextAlign.Center
@@ -87,32 +84,10 @@ fun EmptySearchResults(
         subtitle = "No hay anuncios que coincidan con \"$query\"",
         icon = Icons.Default.Search,
         action = {
-            RixyButton(
-                text = "Limpiar búsqueda",
+            DSButton(
+                title = "Limpiar búsqueda",
                 onClick = onClearSearch,
-                variant = ButtonVariant.OUTLINE
-            )
-        },
-        modifier = modifier
-    )
-}
-
-/**
- * Empty state for listings
- */
-@Composable
-fun EmptyListings(
-    onBrowse: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    EmptyStateView(
-        title = "No hay anuncios",
-        subtitle = "Sé el primero en publicar un anuncio en esta categoría",
-        icon = Icons.Default.ShoppingCart,
-        action = {
-            RixyButton(
-                text = "Explorar",
-                onClick = onBrowse
+                variant = DSButtonVariant.OUTLINE
             )
         },
         modifier = modifier
@@ -133,8 +108,8 @@ fun EmptyErrorState(
         subtitle = message,
         icon = Icons.Default.Info,
         action = {
-            RixyButton(
-                text = "Reintentar",
+            DSButton(
+                title = "Reintentar",
                 onClick = onRetry
             )
         },

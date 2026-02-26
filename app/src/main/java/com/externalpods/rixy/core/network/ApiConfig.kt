@@ -2,7 +2,7 @@ package com.externalpods.rixy.core.network
 
 object ApiConfig {
     // Use 10.0.2.2 for Android emulator to reach host machine localhost
-    const val BASE_URL = "https://keycityapi-production.up.railway.app/api/v1/"
+    const val BASE_URL = "http://192.168.68.58:3000/api/v1/"
     // const val BASE_URL = "https://api.rixy.app/api/v1/" // Production
 
     const val SUPABASE_URL = "https://xawldrmuwlfvjucqlnyw.supabase.co"

@@ -1,11 +1,11 @@
 package com.externalpods.rixy.feature.admin.moderation
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,6 +13,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.externalpods.rixy.core.designsystem.components.*
+import com.externalpods.rixy.core.designsystem.components.DSButton
+import com.externalpods.rixy.core.designsystem.components.DSButtonSize
+import com.externalpods.rixy.core.designsystem.components.DSButtonVariant
+import com.externalpods.rixy.core.designsystem.components.DSLabeledTextField
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.Listing
@@ -29,8 +33,10 @@ fun ModerationListingsScreen(
     var showDialog by remember { mutableStateOf<Listing?>(null) }
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Moderar Anuncios", style = RixyTypography.H4) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) }
@@ -91,8 +97,8 @@ private fun PendingListingCard(
             Text(listing.description ?: "", style = RixyTypography.Caption, color = RixyColors.TextSecondary, maxLines = 2)
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                RixyButton(text = "Aprobar", onClick = onApprove, size = ButtonSize.SMALL)
-                RixyButton(text = "Rechazar", onClick = onReject, variant = ButtonVariant.OUTLINE, size = ButtonSize.SMALL)
+                DSButton(title = "Aprobar", onClick = onApprove, size = DSButtonSize.SMALL)
+                DSButton(title = "Rechazar", onClick = onReject, variant = DSButtonVariant.OUTLINE, size = DSButtonSize.SMALL)
             }
         }
     }
@@ -104,8 +110,7 @@ private fun RejectDialog(onConfirm: (String) -> Unit, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Rechazar Anuncio") },
-        text = {
-            RixyTextField(
+        text = { DSLabeledTextField(
                 value = reason,
                 onValueChange = { reason = it },
                 label = "Razón",

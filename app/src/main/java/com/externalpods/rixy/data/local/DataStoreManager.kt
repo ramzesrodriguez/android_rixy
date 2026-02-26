@@ -19,12 +19,16 @@ class DataStoreManager(private val context: Context) {
     val selectedCityId: Flow<String?> = context.dataStore.data.map { it[CITY_ID] }
     val selectedCitySlug: Flow<String?> = context.dataStore.data.map { it[CITY_SLUG] }
     val selectedCityName: Flow<String?> = context.dataStore.data.map { it[CITY_NAME] }
+    val selectedCityState: Flow<String?> = context.dataStore.data.map { it[CITY_STATE] }
+    val selectedCityCountry: Flow<String?> = context.dataStore.data.map { it[CITY_COUNTRY] }
 
-    suspend fun saveSelectedCity(id: String, slug: String, name: String) {
+    suspend fun saveSelectedCity(id: String, slug: String, name: String, state: String?, country: String?) {
         context.dataStore.edit { prefs ->
             prefs[CITY_ID] = id
             prefs[CITY_SLUG] = slug
             prefs[CITY_NAME] = name
+            state?.let { prefs[CITY_STATE] = it }
+            country?.let { prefs[CITY_COUNTRY] = it }
         }
     }
 
@@ -41,14 +45,24 @@ class DataStoreManager(private val context: Context) {
         prefs[APP_MODE]?.let { AppMode.valueOf(it) } ?: AppMode.USER
     }
 
+    // App language (BCP-47 tags)
+    val appLanguage: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[APP_LANGUAGE] ?: "es"
+    }
+
     suspend fun saveMode(mode: AppMode) {
         context.dataStore.edit { it[APP_MODE] = mode.name }
+    }
+
+    suspend fun saveLanguage(languageTag: String) {
+        context.dataStore.edit { it[APP_LANGUAGE] = languageTag }
     }
 
     // Auth state
     val isAuthenticated: Flow<Boolean> = context.dataStore.data.map { it[IS_AUTHENTICATED] ?: false }
     val currentUserId: Flow<String?> = context.dataStore.data.map { it[USER_ID] }
     val currentUserEmail: Flow<String?> = context.dataStore.data.map { it[USER_EMAIL] }
+    val favoritesJson: Flow<String?> = context.dataStore.data.map { it[FAVORITES_JSON] }
 
     suspend fun saveAuthState(userId: String, email: String) {
         context.dataStore.edit { prefs ->
@@ -66,13 +80,29 @@ class DataStoreManager(private val context: Context) {
         }
     }
 
+    suspend fun saveFavoritesJson(value: String) {
+        context.dataStore.edit { prefs ->
+            prefs[FAVORITES_JSON] = value
+        }
+    }
+
+    suspend fun clearFavorites() {
+        context.dataStore.edit { prefs ->
+            prefs.remove(FAVORITES_JSON)
+        }
+    }
+
     companion object {
         private val CITY_ID = stringPreferencesKey("selected_city_id")
         private val CITY_SLUG = stringPreferencesKey("selected_city_slug")
         private val CITY_NAME = stringPreferencesKey("selected_city_name")
+        private val CITY_STATE = stringPreferencesKey("selected_city_state")
+        private val CITY_COUNTRY = stringPreferencesKey("selected_city_country")
         private val APP_MODE = stringPreferencesKey("app_mode")
+        private val APP_LANGUAGE = stringPreferencesKey("app_language")
         private val IS_AUTHENTICATED = booleanPreferencesKey("is_authenticated")
         private val USER_ID = stringPreferencesKey("current_user_id")
         private val USER_EMAIL = stringPreferencesKey("current_user_email")
+        private val FAVORITES_JSON = stringPreferencesKey("favorites_json")
     }
 }

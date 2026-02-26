@@ -5,17 +5,23 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -25,30 +31,31 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.externalpods.rixy.core.designsystem.components.CityCard
 import com.externalpods.rixy.core.designsystem.components.CityCardSkeleton
-import com.externalpods.rixy.core.designsystem.components.EmptyErrorState
-import com.externalpods.rixy.core.designsystem.components.SearchBar
+import com.externalpods.rixy.core.designsystem.components.DSSearchField
+import com.externalpods.rixy.core.designsystem.components.DSTopBar
+import com.externalpods.rixy.core.designsystem.components.ErrorViewGeneric
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.City
 import org.koin.androidx.compose.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CitySelectorScreen(
     onCitySelected: (City) -> Unit,
+    onBackClick: (() -> Unit)? = null,
     viewModel: CitySelectorViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Scaffold(
+        containerColor = RixyColors.Background,
+        modifier = Modifier.padding(top = 16.dp),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Selecciona tu ciudad",
-                        style = RixyTypography.H4
-                    )
-                }
+            DSTopBar(
+                title = "Selecciona tu ciudad",
+                onBackClick = onBackClick,
+                backgroundColor = RixyColors.Background,
+                titleStyle = RixyTypography.H2
             )
         }
     ) { paddingValues ->
@@ -59,9 +66,9 @@ fun CitySelectorScreen(
                 .padding(horizontal = 16.dp)
         ) {
             // Search bar
-            SearchBar(
-                query = uiState.searchQuery,
-                onQueryChange = viewModel::onSearchQueryChange,
+            DSSearchField(
+                value = uiState.searchQuery,
+                onValueChange = viewModel::onSearchQueryChange,
                 onSearch = { /* Already filtering on query change */ },
                 placeholder = "Buscar ciudad...",
                 modifier = Modifier.padding(vertical = 8.dp)
@@ -75,7 +82,7 @@ fun CitySelectorScreen(
                     CitiesLoadingState()
                 }
                 uiState.error != null -> {
-                    EmptyErrorState(
+                    ErrorViewGeneric(
                         message = uiState.error ?: "Error desconocido",
                         onRetry = viewModel::loadCities,
                         modifier = Modifier.fillMaxSize()
@@ -88,7 +95,7 @@ fun CitySelectorScreen(
                     CitiesGrid(
                         cities = uiState.filteredCities,
                         onCitySelected = { city ->
-                            viewModel.onCitySelected(city)
+                            viewModel.selectCity(city)
                             onCitySelected(city)
                         }
                     )
@@ -111,7 +118,7 @@ private fun CitiesGrid(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(cities, key = { it.id }) { city ->
+        items(cities) { city ->
             CityCard(
                 name = city.name,
                 imageUrl = city.heroImageUrl,

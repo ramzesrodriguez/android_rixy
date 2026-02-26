@@ -67,7 +67,7 @@ class RegisterViewModel(
             _uiState.update { it.copy(isLoading = true, error = null) }
             
             authService.signUp(state.email, state.password)
-                .onSuccess { user ->
+                .onSuccess {
                     _uiState.update { it.copy(isLoading = false, isSuccess = true) }
                 }
                 .onFailure { error ->

@@ -7,10 +7,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,23 +25,17 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Inventory
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -52,13 +46,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.externalpods.rixy.core.designsystem.components.ButtonVariant
-import com.externalpods.rixy.core.designsystem.components.RixyButton
-import com.externalpods.rixy.core.designsystem.components.RixyTextField
+import com.externalpods.rixy.core.designsystem.components.DSButtonVariant
+import com.externalpods.rixy.core.designsystem.components.DSButton
+import com.externalpods.rixy.core.designsystem.components.DSLabeledTextField
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.ListingType
@@ -84,11 +77,12 @@ fun ListingEditorScreen(
     val isEditing = listingId != null
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = {
-                    Text(
-                        text = when (uiState.currentStep) {
+                    Text(text = when (uiState.currentStep) {
                             1 -> "Tipo de Anuncio"
                             2 -> "Información Básica"
                             3 -> "Detalles"
@@ -185,15 +179,13 @@ private fun StepIndicator(currentStep: Int) {
                             modifier = Modifier.size(20.dp)
                         )
                     } else {
-                        Text(
-                            text = step.toString(),
+                        Text(text = step.toString(),
                             style = RixyTypography.BodyMedium,
                             color = if (isActive) RixyColors.White else RixyColors.TextSecondary
                         )
                     }
                 }
-                Text(
-                    text = when (step) {
+                Text(text = when (step) {
                         1 -> "Tipo"
                         2 -> "Básico"
                         else -> "Detalles"
@@ -218,16 +210,14 @@ private fun StepOneTypeSelection(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Text(
-            text = "¿Qué quieres publicar?",
+        Text(text = "¿Qué quieres publicar?",
             style = RixyTypography.H3,
             color = RixyColors.TextPrimary
         )
         
         Spacer(modifier = Modifier.height(8.dp))
         
-        Text(
-            text = "Selecciona el tipo de anuncio que mejor describe tu publicación",
+        Text(text = "Selecciona el tipo de anuncio que mejor describe tu publicación",
             style = RixyTypography.Body,
             color = RixyColors.TextSecondary
         )
@@ -307,13 +297,11 @@ private fun TypeOptionCard(
         Spacer(modifier = Modifier.width(16.dp))
         
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
+            Text(text = title,
                 style = RixyTypography.H4,
                 color = if (isSelected) RixyColors.Brand else RixyColors.TextPrimary
             )
-            Text(
-                text = description,
+            Text(text = description,
                 style = RixyTypography.Body,
                 color = RixyColors.TextSecondary
             )
@@ -353,7 +341,7 @@ private fun StepTwoBasicInfo(
             .verticalScroll(rememberScrollState())
     ) {
         // Title
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.title,
             onValueChange = onTitleChange,
             label = "Título *",
@@ -364,19 +352,19 @@ private fun StepTwoBasicInfo(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Description
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.description,
             onValueChange = onDescriptionChange,
             label = "Descripción",
             placeholder = "Describe tu producto o servicio...",
             modifier = Modifier.fillMaxWidth(),
-            maxLines = 5
+            singleLine = false
         )
         
         Spacer(modifier = Modifier.height(16.dp))
         
         // Category
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.category,
             onValueChange = onCategoryChange,
             label = "Categoría",
@@ -389,8 +377,7 @@ private fun StepTwoBasicInfo(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Photos Section
-        Text(
-            text = "Fotos",
+        Text(text = "Fotos",
             style = RixyTypography.H4,
             color = RixyColors.TextPrimary
         )
@@ -409,8 +396,7 @@ private fun StepTwoBasicInfo(
         
         // Error
         uiState.error?.let { error ->
-            Text(
-                text = error,
+            Text(text = error,
                 style = RixyTypography.Body,
                 color = RixyColors.Error,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -422,14 +408,14 @@ private fun StepTwoBasicInfo(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            RixyButton(
-                text = "Atrás",
+            DSButton(
+                title = "Atrás",
                 onClick = onBack,
-                variant = ButtonVariant.OUTLINE,
+                variant = DSButtonVariant.OUTLINE,
                 modifier = Modifier.weight(1f)
             )
-            RixyButton(
-                text = "Siguiente",
+            DSButton(
+                title = "Siguiente",
                 onClick = onNext,
                 enabled = uiState.title.isNotBlank(),
                 modifier = Modifier.weight(1f)
@@ -534,8 +520,7 @@ private fun StepThreeDetails(
         
         // Error
         uiState.error?.let { error ->
-            Text(
-                text = error,
+            Text(text = error,
                 style = RixyTypography.Body,
                 color = RixyColors.Error,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -547,14 +532,14 @@ private fun StepThreeDetails(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            RixyButton(
-                text = "Atrás",
+            DSButton(
+                title = "Atrás",
                 onClick = onBack,
-                variant = ButtonVariant.OUTLINE,
+                variant = DSButtonVariant.OUTLINE,
                 modifier = Modifier.weight(1f)
             )
-            RixyButton(
-                text = if (uiState.existingListing != null) "Guardar Cambios" else "Publicar",
+            DSButton(
+                title = if (uiState.existingListing != null) "Guardar Cambios" else "Publicar",
                 onClick = onSave,
                 isLoading = uiState.isSaving,
                 modifier = Modifier.weight(1f)
@@ -571,8 +556,7 @@ private fun ProductDetailsForm(
     viewModel: ListingEditorViewModel
 ) {
     Column {
-        Text(
-            text = "Detalles del Producto",
+        Text(text = "Detalles del Producto",
             style = RixyTypography.H4,
             color = RixyColors.TextPrimary
         )
@@ -580,7 +564,7 @@ private fun ProductDetailsForm(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Price
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.productPrice,
             onValueChange = { viewModel.onProductPriceChange(it) },
             label = "Precio",
@@ -591,7 +575,7 @@ private fun ProductDetailsForm(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Stock
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.stockQuantity,
             onValueChange = {},
             label = "Cantidad en stock",
@@ -607,8 +591,7 @@ private fun ServiceDetailsForm(
     viewModel: ListingEditorViewModel
 ) {
     Column {
-        Text(
-            text = "Detalles del Servicio",
+        Text(text = "Detalles del Servicio",
             style = RixyTypography.H4,
             color = RixyColors.TextPrimary
         )
@@ -616,7 +599,7 @@ private fun ServiceDetailsForm(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Price
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.servicePrice,
             onValueChange = {},
             label = "Precio",
@@ -627,7 +610,7 @@ private fun ServiceDetailsForm(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Duration
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.durationMinutes,
             onValueChange = {},
             label = "Duración (minutos)",
@@ -643,8 +626,7 @@ private fun EventDetailsForm(
     viewModel: ListingEditorViewModel
 ) {
     Column {
-        Text(
-            text = "Detalles del Evento",
+        Text(text = "Detalles del Evento",
             style = RixyTypography.H4,
             color = RixyColors.TextPrimary
         )
@@ -652,7 +634,7 @@ private fun EventDetailsForm(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Start Date
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.eventStartDate,
             onValueChange = {},
             label = "Fecha de inicio",
@@ -663,7 +645,7 @@ private fun EventDetailsForm(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Venue
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.venueName,
             onValueChange = {},
             label = "Lugar",
@@ -674,7 +656,7 @@ private fun EventDetailsForm(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Price
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.eventPrice,
             onValueChange = {},
             label = "Precio",

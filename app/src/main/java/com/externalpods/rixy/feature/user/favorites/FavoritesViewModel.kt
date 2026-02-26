@@ -2,53 +2,92 @@ package com.externalpods.rixy.feature.user.favorites
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.externalpods.rixy.core.common.ApiError
 import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.core.model.ListingType
+import com.externalpods.rixy.data.repository.FavoritesRepository
 import com.externalpods.rixy.data.repository.OwnerRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class FavoritesUiState(
-    val favorites: List<Listing> = emptyList(),
-    val filteredFavorites: List<Listing> = emptyList(),
-    val searchQuery: String = "",
-    val selectedType: ListingType? = null,
-    val isLoading: Boolean = false,
-    val error: String? = null
-)
-
 class FavoritesViewModel(
-    private val ownerRepository: OwnerRepository
+    private val ownerRepository: OwnerRepository,
+    private val favoritesRepository: FavoritesRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(FavoritesUiState())
-    val uiState: StateFlow<FavoritesUiState> = _uiState.asStateFlow()
+    data class UiState(
+        val favorites: List<Listing> = emptyList(),
+        val favoriteIds: Set<String> = emptySet(),
+        val loadingFavoriteIds: Set<String> = emptySet(),
+        val searchQuery: String = "",
+        val selectedType: ListingType? = null,
+        val isLoading: Boolean = false,
+        val error: String? = null
+    ) {
+        val filteredFavorites: List<Listing>
+            get() {
+                val query = searchQuery.trim().lowercase()
+                return favorites.filter { listing ->
+                    if (selectedType != null && listing.type != selectedType) {
+                        return@filter false
+                    }
+                    if (query.isBlank()) return@filter true
+                    listing.title.lowercase().contains(query) ||
+                        listing.type.name.lowercase().contains(query) ||
+                        (listing.categoryTag ?: "").lowercase().contains(query) ||
+                        (listing.business?.name ?: "").lowercase().contains(query)
+                }
+            }
+    }
+
+    private val _uiState = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
     init {
         loadFavorites()
     }
 
     fun loadFavorites() {
+        if (_uiState.value.isLoading) return
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
-            
             try {
-                val favorites = ownerRepository.getFavorites()
-                _uiState.update { 
+                val favoriteIds = ownerRepository.getFavoriteIds().toSet()
+                val favorites = ownerRepository.getListings()
+                    .filter { favoriteIds.contains(it.id) }
+                    .sortedByDescending { it.updatedAt ?: it.createdAt.orEmpty() }
+                favoritesRepository.setFavorites(favorites)
+
+                _uiState.update {
                     it.copy(
                         favorites = favorites,
-                        filteredFavorites = favorites,
-                        isLoading = false
+                        favoriteIds = favoriteIds,
+                        isLoading = false,
+                        error = null
                     )
                 }
-            } catch (e: Exception) {
-                _uiState.update { 
+            } catch (error: Exception) {
+                if (error is ApiError.Unauthorized) {
+                    val localFavorites = favoritesRepository.getFavorites().first()
+                    _uiState.update {
+                        it.copy(
+                            favorites = localFavorites,
+                            favoriteIds = localFavorites.map { listing -> listing.id }.toSet(),
+                            isLoading = false,
+                            error = null
+                        )
+                    }
+                    return@launch
+                }
+                _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Error al cargar favoritos"
+                        error = error.message ?: "Error al cargar favoritos"
                     )
                 }
             }
@@ -56,57 +95,54 @@ class FavoritesViewModel(
     }
 
     fun onSearchQueryChange(query: String) {
-        filterFavorites(query, _uiState.value.selectedType)
+        _uiState.update { it.copy(searchQuery = query) }
     }
 
     fun onTypeSelected(type: ListingType?) {
-        filterFavorites(_uiState.value.searchQuery, type)
+        _uiState.update { it.copy(selectedType = type) }
     }
 
-    private fun filterFavorites(query: String, type: ListingType?) {
-        val filtered = _uiState.value.favorites.filter { listing ->
-            val matchesQuery = query.isBlank() || 
-                listing.title.contains(query, ignoreCase = true) ||
-                listing.description?.contains(query, ignoreCase = true) == true
-            
-            val matchesType = type == null || listing.type == type
-            
-            matchesQuery && matchesType
-        }
-        
-        _uiState.update { 
+    fun clearFilters() {
+        _uiState.update { it.copy(selectedType = null, searchQuery = "") }
+    }
+
+    fun toggleFavorite(listingId: String) {
+        val state = _uiState.value
+        if (state.loadingFavoriteIds.contains(listingId)) return
+        if (!state.favoriteIds.contains(listingId)) return
+
+        val previousFavorites = state.favorites
+        val previousFavoriteIds = state.favoriteIds
+
+        _uiState.update {
             it.copy(
-                searchQuery = query,
-                selectedType = type,
-                filteredFavorites = filtered
+                loadingFavoriteIds = it.loadingFavoriteIds + listingId,
+                favoriteIds = it.favoriteIds - listingId,
+                favorites = it.favorites.filterNot { listing -> listing.id == listingId }
             )
         }
-    }
 
-    fun removeFromFavorites(listingId: String) {
         viewModelScope.launch {
-            try {
+            runCatching {
                 ownerRepository.removeFavorite(listingId)
-                // Remove from local list
-                val updated = _uiState.value.favorites.filter { it.id != listingId }
-                _uiState.update { 
+                favoritesRepository.removeFavorite(listingId)
+            }.onFailure { error ->
+                if (error is ApiError.Unauthorized) {
+                    favoritesRepository.removeFavorite(listingId)
+                    return@onFailure
+                }
+                _uiState.update {
                     it.copy(
-                        favorites = updated,
-                        filteredFavorites = updated.filter { f ->
-                            val matchesQuery = it.searchQuery.isBlank() || 
-                                f.title.contains(it.searchQuery, ignoreCase = true)
-                            val matchesType = it.selectedType == null || f.type == it.selectedType
-                            matchesQuery && matchesType
-                        }
+                        favorites = previousFavorites,
+                        favoriteIds = previousFavoriteIds,
+                        error = error.message ?: "No se pudo actualizar favorito"
                     )
                 }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+            }
+
+            _uiState.update {
+                it.copy(loadingFavoriteIds = it.loadingFavoriteIds - listingId)
             }
         }
-    }
-
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
     }
 }

@@ -1,348 +1,312 @@
 package com.externalpods.rixy.feature.settings
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.externalpods.rixy.core.designsystem.components.DSMainHeader
+import com.externalpods.rixy.core.designsystem.components.SectionButton
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
-import com.externalpods.rixy.core.model.AppMode
-import org.koin.androidx.compose.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    isAuthenticated: Boolean,
+    selectedCityName: String?,
+    userEmail: String? = null,
+    languageLabel: String = "Español",
+    canUseOwnerMode: Boolean = false,
     onNavigateToLogin: () -> Unit,
-    onModeChanged: (AppMode) -> Unit,
-    modifier: Modifier = Modifier,
-    viewModel: SettingsViewModel = koinViewModel()
+    onModeChanged: () -> Unit,
+    onSignOut: () -> Unit,
+    onBackClick: (() -> Unit)?,
+    onLanguageClick: (() -> Unit)? = null,
+    onChangeCityClick: () -> Unit = {}
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var showSignOutDialog by remember { mutableStateOf(false) }
-    
-    // Handle sign out success
-    LaunchedEffect(uiState.signOutSuccess) {
-        if (uiState.signOutSuccess) {
-            onNavigateToLogin()
-        }
-    }
-    
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Ajustes", style = RixyTypography.H4) }
-            )
-        }
+        containerColor = RixyColors.Background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
                 .padding(paddingValues)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
+                .background(RixyColors.Background)
         ) {
-            // User info section
-            UserInfoSection(email = uiState.userEmail)
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Mode switcher
-            ModeSwitcherSection(
-                currentMode = uiState.currentMode,
-                onModeSelected = { mode ->
-                    viewModel.switchMode(mode)
-                    onModeChanged(mode)
-                }
+            DSMainHeader(
+                title = "Perfil",
+                onBackClick = onBackClick
             )
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            HorizontalDivider(color = RixyColors.Border)
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // General settings
-            SettingsSection(title = "General") {
-                SettingsItem(
-                    icon = Icons.Default.Person,
-                    title = "Perfil",
-                    subtitle = "Editar información",
-                    onClick = { /* Navigate to profile */ }
+
+            if (isAuthenticated) {
+                AuthenticatedProfileContent(
+                    userEmail = userEmail,
+                    canUseOwnerMode = canUseOwnerMode,
+                    onModeChanged = onModeChanged,
+                    onSignOut = onSignOut,
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
                 )
-                SettingsItem(
-                    icon = Icons.Default.Business,
-                    title = "Mi Negocio",
-                    subtitle = "Gestionar negocio",
-                    onClick = { /* Navigate to business */ }
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = RixyColors.Border)
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Support section
-            SettingsSection(title = "Soporte") {
-                SettingsItem(
-                    icon = Icons.AutoMirrored.Filled.Help,
-                    title = "Centro de ayuda",
-                    onClick = { /* Open help */ }
-                )
-                SettingsItem(
-                    icon = Icons.Default.Info,
-                    title = "Acerca de",
-                    subtitle = "Versión 1.0.0",
-                    onClick = { /* Show about */ }
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = RixyColors.Border)
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Account section
-            SettingsSection(title = "Cuenta") {
-                SettingsItem(
-                    icon = Icons.AutoMirrored.Filled.ExitToApp,
-                    title = "Cerrar sesión",
-                    titleColor = RixyColors.Error,
-                    showArrow = false,
-                    onClick = { showSignOutDialog = true }
+            } else {
+                GuestProfileContent(
+                    selectedCityName = selectedCityName,
+                    languageLabel = languageLabel,
+                    onNavigateToLogin = onNavigateToLogin,
+                    onLanguageClick = onLanguageClick,
+                    onChangeCityClick = onChangeCityClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .padding(vertical = 12.dp)
                 )
             }
         }
     }
-    
-    // Sign out confirmation dialog
-    if (showSignOutDialog) {
-        AlertDialog(
-            onDismissRequest = { showSignOutDialog = false },
-            title = { Text("Cerrar sesión") },
-            text = { Text("¿Estás seguro de que quieres cerrar sesión?") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showSignOutDialog = false
-                        viewModel.signOut()
-                    }
-                ) {
-                    Text("Cerrar sesión", color = RixyColors.Error)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showSignOutDialog = false }) {
-                    Text("Cancelar")
-                }
-            }
-        )
-    }
 }
 
 @Composable
-private fun UserInfoSection(
-    email: String,
+private fun GuestProfileContent(
+    selectedCityName: String?,
+    languageLabel: String,
+    onNavigateToLogin: () -> Unit,
+    onLanguageClick: (() -> Unit)?,
+    onChangeCityClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        Icon(
-            imageVector = Icons.Default.Person,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = RixyColors.Brand
+        GuestSectionTitle("Idioma")
+        SettingsPillRow(
+            title = "Idioma",
+            trailing = languageLabel,
+            titleColor = RixyColors.Brand,
+            onClick = onLanguageClick,
+            showChevron = onLanguageClick != null
         )
-        
-        Spacer(modifier = Modifier.size(16.dp))
-        
-        Column {
+
+        GuestSectionTitle("Ciudad seleccionada")
+        SettingsPillRow(
+            title = selectedCityName ?: "Seleccionar ciudad",
+            trailing = if (selectedCityName.isNullOrBlank()) "" else "Cambiar",
+            trailingColor = RixyColors.Brand,
+            onClick = onChangeCityClick,
+            showChevron = false
+        )
+
+        GuestSectionTitle("Cuenta")
+        SettingsPillRow(
+            title = "Iniciar sesión",
+            titleColor = RixyColors.Brand,
+            onClick = onNavigateToLogin,
+            showChevron = false
+        )
+
+        GuestSectionTitle("Acerca de")
+        SettingsPillRow(
+            title = "Versión",
+            trailing = "1.0.0",
+            onClick = null,
+            showChevron = false
+        )
+    }
+}
+
+@Composable
+private fun AuthenticatedProfileContent(
+    userEmail: String?,
+    canUseOwnerMode: Boolean,
+    onModeChanged: () -> Unit,
+    onSignOut: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        ProfileHeaderSection(
+            name = "Usuario",
+            email = userEmail ?: "Tu cuenta está activa"
+        )
+
+        HorizontalDivider(
+            color = RixyColors.Border,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+
+        if (canUseOwnerMode) {
+            SectionHeader("Negocios")
+            SectionButton(
+                icon = Icons.Default.Business,
+                title = "Modo Propietario",
+                subtitle = "Administra tu negocio",
+                onClick = onModeChanged,
+                showChevron = true
+            )
+
+            HorizontalDivider(
+                color = RixyColors.Border,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
+
+        SectionButton(
+            icon = Icons.AutoMirrored.Filled.ExitToApp,
+            title = "Cerrar Sesión",
+            onClick = onSignOut,
+            showChevron = false,
+            isDestructive = true
+        )
+    }
+}
+
+@Composable
+private fun GuestSectionTitle(title: String) {
+    Text(
+        text = title,
+        style = RixyTypography.H4,
+        color = RixyColors.TextSecondary,
+        modifier = Modifier.padding(horizontal = 4.dp)
+    )
+}
+
+@Composable
+private fun SettingsPillRow(
+    title: String,
+    trailing: String = "",
+    titleColor: Color = RixyColors.TextPrimary,
+    trailingColor: Color = RixyColors.TextSecondary,
+    showChevron: Boolean = true,
+    onClick: (() -> Unit)?
+) {
+    Surface(
+        onClick = { onClick?.invoke() },
+        shape = RoundedCornerShape(28.dp),
+        color = RixyColors.White,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                text = "Usuario",
+                text = title,
                 style = RixyTypography.H4,
-                color = RixyColors.TextPrimary
+                color = titleColor,
+                modifier = Modifier.weight(1f)
             )
-            Text(
-                text = email.ifEmpty { "Invitado" },
-                style = RixyTypography.Body,
-                color = RixyColors.TextSecondary
-            )
-        }
-    }
-}
 
-@Composable
-private fun ModeSwitcherSection(
-    currentMode: AppMode,
-    onModeSelected: (AppMode) -> Unit
-) {
-    Column {
-        Text(
-            text = "Modo de uso",
-            style = RixyTypography.H4,
-            color = RixyColors.TextPrimary
-        )
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        ModeOption(
-            mode = AppMode.USER,
-            title = "Usuario",
-            subtitle = "Explorar anuncios y negocios",
-            isSelected = currentMode == AppMode.USER,
-            onClick = { onModeSelected(AppMode.USER) }
-        )
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        ModeOption(
-            mode = AppMode.OWNER,
-            title = "Propietario",
-            subtitle = "Gestionar negocio y anuncios",
-            isSelected = currentMode == AppMode.OWNER,
-            onClick = { onModeSelected(AppMode.OWNER) }
-        )
-    }
-}
-
-@Composable
-private fun ModeOption(
-    mode: AppMode,
-    title: String,
-    subtitle: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = RixyTypography.BodyMedium,
-                color = RixyColors.TextPrimary
-            )
-            Text(
-                text = subtitle,
-                style = RixyTypography.Caption,
-                color = RixyColors.TextSecondary
-            )
-        }
-        
-        if (isSelected) {
-            Icon(
-                imageVector = Icons.Default.Shield,
-                contentDescription = "Seleccionado",
-                tint = RixyColors.Brand
-            )
-        }
-    }
-}
-
-@Composable
-private fun SettingsSection(
-    title: String,
-    content: @Composable () -> Unit
-) {
-    Column {
-        Text(
-            text = title,
-            style = RixyTypography.Caption,
-            color = RixyColors.TextSecondary
-        )
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
-        content()
-    }
-}
-
-@Composable
-private fun SettingsItem(
-    icon: ImageVector,
-    title: String,
-    subtitle: String? = null,
-    titleColor: androidx.compose.ui.graphics.Color = RixyColors.TextPrimary,
-    showArrow: Boolean = true,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = RixyColors.TextSecondary,
-            modifier = Modifier.size(24.dp)
-        )
-        
-        Spacer(modifier = Modifier.size(16.dp))
-        
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = RixyTypography.BodyMedium,
-                color = titleColor
-            )
-            subtitle?.let {
+            if (trailing.isNotBlank()) {
                 Text(
-                    text = it,
-                    style = RixyTypography.Caption,
-                    color = RixyColors.TextSecondary
+                    text = trailing,
+                    style = RixyTypography.H4,
+                    color = trailingColor
+                )
+            }
+
+            if (showChevron) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = RixyColors.TextTertiary
                 )
             }
         }
-        
-        if (showArrow) {
+    }
+}
+
+@Composable
+private fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        style = RixyTypography.CaptionSmall,
+        color = RixyColors.TextTertiary,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+    )
+}
+
+@Composable
+private fun ProfileHeaderSection(
+    name: String,
+    email: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Surface(
+            modifier = Modifier.size(64.dp),
+            shape = CircleShape,
+            color = RixyColors.BrandLight
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = RixyColors.Brand,
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = name,
+                style = RixyTypography.Title3
+            )
+            Text(
+                text = email,
+                style = RixyTypography.BodySmall,
+                color = RixyColors.TextSecondary
+            )
+        }
+
+        Surface(
+            shape = CircleShape,
+            color = RixyColors.BrandLight
+        ) {
             Icon(
-                imageVector = Icons.Default.ChevronRight,
+                imageVector = Icons.Default.Edit,
                 contentDescription = null,
-                tint = RixyColors.TextTertiary
+                tint = RixyColors.Brand,
+                modifier = Modifier.padding(8.dp)
             )
         }
     }

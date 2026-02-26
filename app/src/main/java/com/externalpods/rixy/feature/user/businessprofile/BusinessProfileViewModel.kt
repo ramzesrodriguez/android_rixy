@@ -1,6 +1,5 @@
 package com.externalpods.rixy.feature.user.businessprofile
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.externalpods.rixy.core.model.Business
@@ -26,18 +25,20 @@ class BusinessProfileViewModel(
     private val getBusinessUseCase: GetBusinessUseCase,
     private val listingRepository: ListingRepository,
     private val analyticsService: AnalyticsService,
-    savedStateHandle: SavedStateHandle
+    private val citySlug: String,
+    private val businessId: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BusinessProfileUiState())
     val uiState: StateFlow<BusinessProfileUiState> = _uiState.asStateFlow()
 
-    private val citySlug: String = savedStateHandle["citySlug"] ?: ""
-    private val businessId: String = savedStateHandle["businessId"] ?: ""
-
     init {
         if (citySlug.isNotEmpty() && businessId.isNotEmpty()) {
             loadBusiness()
+        } else {
+            _uiState.update {
+                it.copy(error = "No se pudo abrir el negocio (citySlug/businessId faltante)")
+            }
         }
     }
 

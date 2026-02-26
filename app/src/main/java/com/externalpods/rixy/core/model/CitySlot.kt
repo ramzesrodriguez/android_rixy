@@ -2,6 +2,7 @@ package com.externalpods.rixy.core.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class CitySlotSubscription(
@@ -52,17 +53,37 @@ data class CitySlotAssignment(
 @Serializable
 data class PublicCitySlot(
     val id: String,
-    @SerialName("city_id") val cityId: String,
-    @SerialName("subscription_id") val subscriptionId: String? = null,
-    @SerialName("listing_id") val listingId: String? = null,
-    @SerialName("slot_type") val slotType: CitySlotType,
-    @SerialName("slot_index") val slotIndex: Int,
-    @SerialName("is_active") val isActive: Boolean,
+    @SerialName("city_id")
+    @JsonNames("cityId")
+    val cityId: String,
+    @SerialName("subscription_id")
+    @JsonNames("subscriptionId")
+    val subscriptionId: String? = null,
+    @SerialName("listing_id")
+    @JsonNames("listingId")
+    val listingId: String? = null,
+    @SerialName("slot_type")
+    @JsonNames("slotType")
+    val slotType: CitySlotType,
+    @SerialName("slot_index")
+    @JsonNames("slotIndex")
+    val slotIndex: Int,
+    @SerialName("is_active")
+    @JsonNames("isActive")
+    val isActive: Boolean,
     val priority: Int? = null,
-    @SerialName("clicks_count") val clicksCount: Int = 0,
-    @SerialName("views_count") val viewsCount: Int = 0,
-    @SerialName("created_at") val createdAt: String? = null,
-    @SerialName("updated_at") val updatedAt: String? = null,
+    @SerialName("clicks_count")
+    @JsonNames("clicksCount")
+    val clicksCount: Int = 0,
+    @SerialName("views_count")
+    @JsonNames("viewsCount")
+    val viewsCount: Int = 0,
+    @SerialName("created_at")
+    @JsonNames("createdAt")
+    val createdAt: String? = null,
+    @SerialName("updated_at")
+    @JsonNames("updatedAt")
+    val updatedAt: String? = null,
     val subscription: SlotSubscription? = null,
     val listing: SlotListing? = null,
     val business: SlotBusiness? = null
@@ -75,9 +96,15 @@ data class PublicCitySlot(
 @Serializable
 data class SlotSubscription(
     val id: String,
-    @SerialName("start_at") val startAt: String,
-    @SerialName("end_at") val endAt: String,
-    val status: CitySlotStatus
+    @SerialName("start_at")
+    @JsonNames("startAt")
+    val startAt: String? = null,
+    @SerialName("end_at")
+    @JsonNames("endAt")
+    val endAt: String? = null,
+    @SerialName("status")
+    @JsonNames("status")
+    val status: CitySlotStatus? = null
 )
 
 @Serializable
@@ -85,20 +112,30 @@ data class SlotListing(
     val id: String,
     val title: String,
     val type: ListingType,
-    @SerialName("photo_urls") val photoUrls: List<String> = emptyList(),
+    @SerialName("photo_urls")
+    @JsonNames("photoUrls")
+    val photoUrls: List<String> = emptyList(),
     val description: String? = null,
-    @SerialName("category_tag") val categoryTag: String? = null,
+    @SerialName("category_tag")
+    @JsonNames("categoryTag")
+    val categoryTag: String? = null,
     val business: SlotBusiness? = null,
-    @SerialName("price_amount") val priceAmount: String? = null,
+    @SerialName("price_amount")
+    @JsonNames("priceAmount")
+    val priceAmount: String? = null,
     val currency: String? = null,
-    @SerialName("price_type") val priceType: PriceType? = null
+    @SerialName("price_type")
+    @JsonNames("priceType")
+    val priceType: PriceType? = null
 )
 
 @Serializable
 data class SlotBusiness(
     val id: String,
     val name: String,
-    @SerialName("logo_url") val logoUrl: String? = null
+    @SerialName("logo_url")
+    @JsonNames("logoUrl")
+    val logoUrl: String? = null
 )
 
 // Slot availability models (owner purchasing flow)

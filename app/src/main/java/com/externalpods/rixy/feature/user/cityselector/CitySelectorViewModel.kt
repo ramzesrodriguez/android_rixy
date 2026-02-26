@@ -2,10 +2,9 @@ package com.externalpods.rixy.feature.user.cityselector
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.externalpods.rixy.core.common.UiState
 import com.externalpods.rixy.core.model.City
 import com.externalpods.rixy.domain.usecase.city.GetCitiesUseCase
-import com.externalpods.rixy.navigation.AppState
+import com.externalpods.rixy.navigation.AppStateViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +21,7 @@ data class CitySelectorUiState(
 
 class CitySelectorViewModel(
     private val getCitiesUseCase: GetCitiesUseCase,
-    private val appState: AppState
+    private val appState: AppStateViewModel
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CitySelectorUiState())
@@ -53,7 +52,7 @@ class CitySelectorViewModel(
                     _uiState.update { 
                         it.copy(
                             isLoading = false,
-                            error = error.message
+                            error = error.message ?: "Failed to load cities"
                         )
                     }
                 }
@@ -67,18 +66,23 @@ class CitySelectorViewModel(
             allCities.filter { city ->
                 city.name.contains(query, ignoreCase = true) ||
                 city.state?.contains(query, ignoreCase = true) == true ||
-                city.country?.contains(query, ignoreCase = true) == true
+                (city.country?.contains(query, ignoreCase = true) == true)
             }
         }
         
-        _uiState.update { it.copy(searchQuery = query, filteredCities = filtered) }
+        _uiState.update { 
+            it.copy(
+                searchQuery = query,
+                filteredCities = filtered
+            )
+        }
     }
 
-    fun onCitySelected(city: City) {
+    fun selectCity(city: City) {
         appState.selectCity(city)
     }
 
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
+    fun refresh() {
+        loadCities()
     }
 }

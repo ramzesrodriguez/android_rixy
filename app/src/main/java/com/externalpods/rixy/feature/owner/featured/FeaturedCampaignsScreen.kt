@@ -2,6 +2,7 @@ package com.externalpods.rixy.feature.owner.featured
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -14,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.externalpods.rixy.core.designsystem.components.*
+import com.externalpods.rixy.core.designsystem.components.DSButton
+import com.externalpods.rixy.core.designsystem.components.DSButtonSize
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import org.koin.androidx.compose.koinViewModel
@@ -27,8 +30,10 @@ fun FeaturedCampaignsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Destacados", style = RixyTypography.H4) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
@@ -129,10 +134,10 @@ private fun AvailablePlacementCard(
                 Text(placement.slotType?.displayName ?: "Espacio", style = RixyTypography.BodyMedium)
                 Text("$${placement.basePriceCents?.div(100)} ${placement.currency}", style = RixyTypography.Price, color = RixyColors.Brand)
             }
-            RixyButton(
-                text = "Comprar",
+            DSButton(
+                title = "Comprar",
                 onClick = onPurchase,
-                size = ButtonSize.SMALL
+                size = DSButtonSize.SMALL
             )
         }
     }

@@ -1,117 +1,166 @@
 package com.externalpods.rixy.feature.user.favorites
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.*
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.externalpods.rixy.core.designsystem.components.*
+import com.externalpods.rixy.core.common.CurrencyFormatter
+import com.externalpods.rixy.core.designsystem.components.DSListingCard
+import com.externalpods.rixy.core.designsystem.components.DSListingCardSkeleton
+import com.externalpods.rixy.core.designsystem.components.DSMainHeader
+import com.externalpods.rixy.core.designsystem.components.DSSearchField
+import com.externalpods.rixy.core.designsystem.components.EmptyStateFavorites
+import com.externalpods.rixy.core.designsystem.components.EmptyStateSearch
+import com.externalpods.rixy.core.designsystem.components.ErrorViewGeneric
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.core.model.ListingType
 import org.koin.androidx.compose.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
+    viewModel: FavoritesViewModel = koinViewModel(),
     onListingClick: (Listing) -> Unit,
-    onBackClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    viewModel: FavoritesViewModel = koinViewModel()
+    onBackClick: (() -> Unit)?
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    
+
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Mis Favoritos", style = RixyTypography.H4) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, null)
-                    }
-                }
-            )
-        }
-    ) { padding ->
+        containerColor = RixyColors.Background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-            // Search
-            SearchBar(
-                query = uiState.searchQuery,
-                onQueryChange = viewModel::onSearchQueryChange,
-                onSearch = {},
-                placeholder = "Buscar en favoritos...",
-                modifier = Modifier.padding(vertical = 8.dp)
+            DSMainHeader(title = "Favoritos")
+
+            DSSearchField(
+                value = uiState.searchQuery,
+                onValueChange = viewModel::onSearchQueryChange,
+                onSearch = { },
+                placeholder = "Buscar favoritos...",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
             )
-            
-            // Type filter
-            TypeFilterChips(
+
+            FavoritesTypeFilters(
                 selectedType = uiState.selectedType,
-                onTypeSelected = viewModel::onTypeSelected
+                onTypeSelected = viewModel::onTypeSelected,
+                modifier = Modifier.padding(vertical = 4.dp)
             )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // Content
+
             when {
-                uiState.isLoading -> Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = RixyColors.Brand)
+                uiState.isLoading -> {
+                    FavoritesLoadingGrid()
                 }
-                uiState.error != null -> EmptyErrorState(
-                    message = uiState.error ?: "Error",
-                    onRetry = viewModel::loadFavorites,
-                    modifier = Modifier.fillMaxSize()
-                )
-                uiState.filteredFavorites.isEmpty() -> EmptyFavoritesState()
-                else -> FavoritesGrid(
-                    favorites = uiState.filteredFavorites,
-                    onListingClick = onListingClick,
-                    onRemove = viewModel::removeFromFavorites
-                )
+
+                uiState.error != null -> {
+                    ErrorViewGeneric(
+                        message = uiState.error ?: "Error al cargar favoritos",
+                        onRetry = viewModel::loadFavorites,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                uiState.favorites.isEmpty() -> {
+                    EmptyStateFavorites(
+                        onBrowseClick = { },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 48.dp)
+                    )
+                }
+
+                uiState.filteredFavorites.isEmpty() -> {
+                    EmptyStateSearch(
+                        query = uiState.searchQuery,
+                        onClearSearch = viewModel::clearFilters
+                    )
+                }
+
+                else -> {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(vertical = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(
+                            items = uiState.filteredFavorites,
+                            key = { it.id }
+                        ) { listing ->
+                            val isLoadingFavorite = uiState.loadingFavoriteIds.contains(listing.id)
+                            DSListingCard(
+                                title = listing.title,
+                                imageUrl = listing.photoUrls?.firstOrNull(),
+                                priceFormatted = remember(listing) { listing.formatPrice() },
+                                type = com.externalpods.rixy.core.designsystem.components.ListingType.valueOf(
+                                    listing.type.name
+                                ),
+                                businessName = listing.business?.name,
+                                isFavorite = uiState.favoriteIds.contains(listing.id),
+                                onFavoriteClick = if (isLoadingFavorite) null else {
+                                    { viewModel.toggleFavorite(listing.id) }
+                                },
+                                onCardClick = { onListingClick(listing) },
+                                useFixedWidth = false
+                            )
+                        }
+                    }
+                }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TypeFilterChips(
+private fun FavoritesTypeFilters(
     selectedType: ListingType?,
-    onTypeSelected: (ListingType?) -> Unit
+    onTypeSelected: (ListingType?) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    val types = listOf(
-        null to "Todos",
-        ListingType.PRODUCT to "Productos",
-        ListingType.SERVICE to "Servicios",
-        ListingType.EVENT to "Eventos"
+    val chips = listOf(
+        ListingType.PRODUCT,
+        ListingType.SERVICE,
+        ListingType.EVENT
     )
-    
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(vertical = 4.dp)
+
+    LazyRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        types.forEach { (type, label) ->
+        items(chips.size) { index ->
+            val type = chips[index]
             FilterChip(
                 selected = selectedType == type,
-                onClick = { onTypeSelected(type) },
-                label = { Text(label, style = RixyTypography.Body) },
+                onClick = {
+                    onTypeSelected(if (selectedType == type) null else type)
+                },
+                label = { Text(type.displayName, style = RixyTypography.Body) },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = RixyColors.Brand.copy(alpha = 0.15f),
                     selectedLabelColor = RixyColors.Brand
@@ -122,67 +171,22 @@ private fun TypeFilterChips(
 }
 
 @Composable
-private fun FavoritesGrid(
-    favorites: List<Listing>,
-    onListingClick: (Listing) -> Unit,
-    onRemove: (String) -> Unit
-) {
+private fun FavoritesLoadingGrid() {
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 8.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxSize()
     ) {
-        items(favorites, key = { it.id }) { listing ->
-            Box {
-                ListingCard(
-                    title = listing.title,
-                    imageUrl = listing.photoUrls?.firstOrNull(),
-                    price = listing.productDetails?.priceAmount,
-                    type = listing.type,
-                    businessName = listing.business?.name,
-                    onClick = { onListingClick(listing) }
-                )
-                // Remove button
-                IconButton(
-                    onClick = { onRemove(listing.id) },
-                    modifier = Modifier.align(Alignment.TopEnd)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar",
-                        tint = RixyColors.Error
-                    )
-                }
-            }
+        items(6) {
+            DSListingCardSkeleton(modifier = Modifier.fillMaxWidth())
         }
     }
 }
 
-@Composable
-private fun EmptyFavoritesState() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = "♥",
-                style = RixyTypography.H1,
-                color = RixyColors.TextTertiary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "No tienes favoritos",
-                style = RixyTypography.H4,
-                color = RixyColors.TextPrimary
-            )
-            Text(
-                text = "Guarda tus anuncios favoritos para verlos aquí",
-                style = RixyTypography.Body,
-                color = RixyColors.TextSecondary
-            )
-        }
-    }
+private fun Listing.formatPrice(): String {
+    val amount = productDetails?.priceAmount ?: serviceDetails?.priceAmount ?: eventDetails?.priceAmount
+    val currency = productDetails?.currency ?: serviceDetails?.currency ?: eventDetails?.currency ?: "MXN"
+    return CurrencyFormatter.format(amount, currency)
 }

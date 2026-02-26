@@ -23,8 +23,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.externalpods.rixy.core.designsystem.components.RixyButton
-import com.externalpods.rixy.core.designsystem.components.RixyTextField
+import com.externalpods.rixy.core.designsystem.components.DSButton
+import com.externalpods.rixy.core.designsystem.components.DSLabeledTextField
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import org.koin.androidx.compose.koinViewModel
@@ -53,8 +53,7 @@ fun RegisterScreen(
         verticalArrangement = Arrangement.Center
     ) {
         // Logo / Brand
-        Text(
-            text = "Rixy",
+        Text(text = "Rixy",
             style = RixyTypography.H1,
             color = RixyColors.Brand,
             textAlign = TextAlign.Center
@@ -62,8 +61,7 @@ fun RegisterScreen(
         
         Spacer(modifier = Modifier.height(8.dp))
         
-        Text(
-            text = "Conecta con tu ciudad",
+        Text(text = "Conecta con tu ciudad",
             style = RixyTypography.BodyLarge,
             color = RixyColors.TextSecondary,
             textAlign = TextAlign.Center
@@ -72,8 +70,7 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(48.dp))
         
         // Title
-        Text(
-            text = "Crear cuenta",
+        Text(text = "Crear cuenta",
             style = RixyTypography.H3,
             color = RixyColors.TextPrimary,
             modifier = Modifier.fillMaxWidth()
@@ -82,7 +79,7 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(24.dp))
         
         // Email field
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.email,
             onValueChange = viewModel::onEmailChange,
             label = "Correo electrónico",
@@ -95,7 +92,7 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Password field
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.password,
             onValueChange = viewModel::onPasswordChange,
             label = "Contraseña",
@@ -107,7 +104,7 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(16.dp))
         
         // Confirm password field
-        RixyTextField(
+        DSLabeledTextField(
             value = uiState.confirmPassword,
             onValueChange = viewModel::onConfirmPasswordChange,
             label = "Confirmar contraseña",
@@ -120,8 +117,7 @@ fun RegisterScreen(
         
         // General error
         uiState.error?.let { error ->
-            Text(
-                text = error,
+            Text(text = error,
                 style = RixyTypography.Body,
                 color = RixyColors.Error,
                 modifier = Modifier.fillMaxWidth()
@@ -132,8 +128,8 @@ fun RegisterScreen(
         Spacer(modifier = Modifier.height(24.dp))
         
         // Register button
-        RixyButton(
-            text = "Crear cuenta",
+        DSButton(
+            title = "Crear cuenta",
             onClick = viewModel::register,
             isLoading = uiState.isLoading,
             modifier = Modifier.fillMaxWidth()
@@ -158,8 +154,7 @@ fun RegisterScreen(
             pop()
         }
         
-        ClickableText(
-            text = annotatedString,
+        ClickableText(text = annotatedString,
             style = RixyTypography.Body,
             onClick = { offset ->
                 annotatedString.getStringAnnotations(

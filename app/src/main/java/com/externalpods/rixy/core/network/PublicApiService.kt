@@ -22,16 +22,17 @@ interface PublicApiService {
         @Path("citySlug") citySlug: String
     ): Response<ApiResponse<City>>
 
-    @GET("{citySlug}/sections")
+    @GET("{citySlug}/home/sections")
     suspend fun getCitySections(
         @Path("citySlug") citySlug: String
     ): Response<ApiResponse<List<CitySection>>>
 
-    @GET("{citySlug}/sections/{sectionId}/items")
+    @GET("{citySlug}/home/sections/{sectionKey}/items")
     suspend fun getCitySectionItems(
         @Path("citySlug") citySlug: String,
-        @Path("sectionId") sectionId: String
-    ): Response<ApiResponse<CitySectionItemsResponse>>
+        @Path("sectionKey") sectionKey: String,
+        @Query("limit") limit: Int? = null
+    ): Response<CitySectionItemsResponse>
 
     @GET("{citySlug}/listings")
     suspend fun getListings(

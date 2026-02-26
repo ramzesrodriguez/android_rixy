@@ -1,6 +1,7 @@
 package com.externalpods.rixy.feature.admin.cities
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.externalpods.rixy.core.designsystem.components.*
+import com.externalpods.rixy.core.designsystem.components.DSLabeledTextField
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.City
@@ -29,8 +31,10 @@ fun CitiesManagementScreen(
     var editingCity by remember { mutableStateOf<City?>(null) }
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Ciudades", style = RixyTypography.H4) },
                 navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) } },
                 actions = {
@@ -86,9 +90,9 @@ private fun CityDialog(city: City? = null, onConfirm: (String, String) -> Unit, 
         title = { Text(if (city == null) "Crear Ciudad" else "Editar Ciudad") },
         text = {
             Column {
-                RixyTextField(value = name, onValueChange = { name = it }, label = "Nombre", modifier = Modifier.fillMaxWidth())
+                DSLabeledTextField(value = name, onValueChange = { name = it }, label = "Nombre", modifier = Modifier.fillMaxWidth())
                 Spacer(Modifier.height(8.dp))
-                RixyTextField(value = slug, onValueChange = { slug = it }, label = "Slug", modifier = Modifier.fillMaxWidth())
+                DSLabeledTextField(value = slug, onValueChange = { slug = it }, label = "Slug", modifier = Modifier.fillMaxWidth())
             }
         },
         confirmButton = { TextButton(onClick = { onConfirm(name, slug) }) { Text("Guardar") } },

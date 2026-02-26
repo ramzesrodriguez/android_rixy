@@ -4,6 +4,7 @@ import com.externalpods.rixy.core.model.Owner
 import com.externalpods.rixy.core.network.ApiConfig
 import com.externalpods.rixy.data.local.DataStoreManager
 import com.externalpods.rixy.data.local.TokenManager
+import com.externalpods.rixy.data.repository.FavoritesRepository
 import com.externalpods.rixy.data.repository.OwnerRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.Auth
@@ -26,7 +27,8 @@ sealed class AuthState {
 class AuthService(
     private val tokenManager: TokenManager,
     private val dataStoreManager: DataStoreManager,
-    private val ownerRepository: OwnerRepository
+    private val ownerRepository: OwnerRepository,
+    private val favoritesRepository: FavoritesRepository
 ) {
     private val supabase: SupabaseClient = createSupabaseClient(
         supabaseUrl = ApiConfig.SUPABASE_URL,
@@ -50,6 +52,7 @@ class AuthService(
                 tokenManager.saveToken(token)
             }
             val user = ownerRepository.getProfile()
+            runCatching { favoritesRepository.syncLocalToRemote(ownerRepository) }
             dataStoreManager.saveAuthState(user.id, user.email)
             _authState.value = AuthState.Authenticated(user)
             Result.success(user)
@@ -60,21 +63,19 @@ class AuthService(
         }
     }
 
-    suspend fun signUp(email: String, password: String): Result<Owner> {
+    suspend fun signUp(email: String, password: String): Result<Unit> {
         _authState.value = AuthState.Loading
         return try {
             supabase.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
             }
-            val token = supabase.auth.currentSessionOrNull()?.accessToken
-            if (token != null) {
-                tokenManager.saveToken(token)
-            }
-            val user = ownerRepository.getProfile()
-            dataStoreManager.saveAuthState(user.id, user.email)
-            _authState.value = AuthState.Authenticated(user)
-            Result.success(user)
+            // iOS parity: sign up only creates the account; user may need to confirm email.
+            // Keep app unauthenticated until explicit sign in.
+            tokenManager.clearToken()
+            dataStoreManager.clearAuthState()
+            _authState.value = AuthState.Unauthenticated
+            Result.success(Unit)
         } catch (e: Exception) {
             val readableError = mapAuthError(e)
             _authState.value = AuthState.Error(readableError)

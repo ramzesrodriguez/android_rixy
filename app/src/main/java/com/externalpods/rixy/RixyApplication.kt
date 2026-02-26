@@ -1,6 +1,9 @@
 package com.externalpods.rixy
 
 import android.app.Application
+import coil.Coil
+import coil.ImageLoader
+import coil.util.DebugLogger
 import com.externalpods.rixy.core.network.networkModule
 import com.externalpods.rixy.data.dataModule
 import com.externalpods.rixy.di.appModule
@@ -17,6 +20,7 @@ class RixyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
+        // Initialize Koin
         startKoin {
             androidLogger(Level.ERROR)
             androidContext(this@RixyApplication)
@@ -29,5 +33,13 @@ class RixyApplication : Application() {
                 featureModule
             )
         }
+
+        // Initialize Coil ImageLoader
+        val imageLoader = ImageLoader.Builder(this)
+            .crossfade(true)
+            .logger(DebugLogger())
+            .build()
+        
+        Coil.setImageLoader(imageLoader)
     }
 }

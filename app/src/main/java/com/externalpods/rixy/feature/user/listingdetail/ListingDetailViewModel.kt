@@ -1,6 +1,5 @@
 package com.externalpods.rixy.feature.user.listingdetail
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.externalpods.rixy.core.model.Listing
@@ -23,18 +22,20 @@ data class ListingDetailUiState(
 class ListingDetailViewModel(
     private val getListingDetailUseCase: GetListingDetailUseCase,
     private val analyticsService: AnalyticsService,
-    savedStateHandle: SavedStateHandle
+    private val citySlug: String,
+    private val listingId: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ListingDetailUiState())
     val uiState: StateFlow<ListingDetailUiState> = _uiState.asStateFlow()
 
-    private val citySlug: String = savedStateHandle["citySlug"] ?: ""
-    private val listingId: String = savedStateHandle["listingId"] ?: ""
-
     init {
         if (citySlug.isNotEmpty() && listingId.isNotEmpty()) {
             loadListing()
+        } else {
+            _uiState.update {
+                it.copy(error = "No se pudo abrir el detalle (citySlug/listingId faltante)")
+            }
         }
     }
 
