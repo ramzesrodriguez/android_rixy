@@ -20,17 +20,18 @@ import com.externalpods.rixy.feature.user.cityhome.CityHomeViewModel
 import com.externalpods.rixy.feature.user.cityselector.CitySelectorViewModel
 import com.externalpods.rixy.feature.user.listingdetail.ListingDetailViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 val featureModule = module {
     
     // Auth
-    viewModel { LoginViewModel(get(), get()) }
+    viewModelOf(::LoginViewModel)
     viewModel { RegisterViewModel(get()) }
     
     // User Mode
-    viewModel { CitySelectorViewModel(get(), get()) }
-    viewModel { CityHomeViewModel(get(), get(), get()) }
+    viewModelOf(::CitySelectorViewModel)
+    viewModelOf(::CityHomeViewModel)
     viewModel { params ->
         ListingDetailViewModel(
             getListingDetailUseCase = get(),
@@ -61,19 +62,19 @@ val featureModule = module {
     // FavoritesViewModel already defined in AppModule
     
     // Owner Mode
-    viewModel { OwnerDashboardViewModel(get(), get()) }
-    viewModel { BusinessEditorViewModel(get(), get()) }
+    viewModelOf(::OwnerDashboardViewModel)
+    viewModelOf(::BusinessEditorViewModel)
     viewModel { params -> ListingEditorViewModel(get(), get(), params.getOrNull<String>()) }
-    viewModel { FeaturedCampaignsViewModel(get()) }
-    viewModel { OwnerCitySlotsViewModel(get(), get()) }
+    viewModelOf(::FeaturedCampaignsViewModel)
+    viewModelOf(::OwnerCitySlotsViewModel)
     
     // Admin Mode
-    viewModel { AdminDashboardViewModel(get()) }
-    viewModel { ModerationViewModel(get()) }
-    viewModel { CitiesManagementViewModel(get()) }
-    viewModel { UsersManagementViewModel(get()) }
-    viewModel { AuditLogsViewModel(get()) }
+    viewModelOf(::AdminDashboardViewModel)
+    viewModelOf(::ModerationViewModel)
+    viewModelOf(::CitiesManagementViewModel)
+    viewModelOf(::UsersManagementViewModel)
+    viewModelOf(::AuditLogsViewModel)
     
     // Settings
-    viewModel { SettingsViewModel(get(), get()) }
+    viewModelOf(::SettingsViewModel)
 }

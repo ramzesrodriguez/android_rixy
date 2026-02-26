@@ -1,6 +1,7 @@
 package com.externalpods.rixy.feature.user.orders
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,7 +17,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.externalpods.rixy.core.designsystem.components.EmptyStateOrders
+import com.externalpods.rixy.core.designsystem.components.DSMainHeader
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 
@@ -29,31 +32,45 @@ fun OrdersScreen(
     onBackClick: (() -> Unit)?
 ) {
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            TopAppBar(
-                title = { Text("Mis Pedidos", style = RixyTypography.H1) },
-                navigationIcon = {
-                    if (onBackClick != null) {
+            if (onBackClick != null) {
+                TopAppBar(
+                    title = { Text("Mis Pedidos", style = RixyTypography.H1) },
+                    navigationIcon = {
                         IconButton(onClick = onBackClick) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                         }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = RixyColors.Background,
-                    titleContentColor = RixyColors.TextPrimary,
-                    navigationIconContentColor = RixyColors.TextPrimary
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = RixyColors.Background,
+                        titleContentColor = RixyColors.TextPrimary,
+                        navigationIconContentColor = RixyColors.TextPrimary
+                    )
                 )
-            )
+            }
         }
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
         ) {
-            EmptyStateOrders()
+            if (onBackClick == null) {
+                DSMainHeader(
+                    title = "Mis Pedidos",
+                    modifier = Modifier
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                EmptyStateOrders()
+            }
         }
     }
 }

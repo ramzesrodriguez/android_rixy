@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.externalpods.rixy.core.designsystem.components.DSListingCard
 import com.externalpods.rixy.core.designsystem.components.DSListingCardSkeleton
+import com.externalpods.rixy.core.designsystem.components.DSMainHeader
 import com.externalpods.rixy.core.designsystem.components.DSSearchField
 import com.externalpods.rixy.core.designsystem.components.DSTopBar
 import com.externalpods.rixy.core.designsystem.components.EmptyStateSearch
@@ -75,13 +77,16 @@ fun BrowseListingsScreen(
     }
     
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            DSTopBar(
-                title = "Explorar",
-                onBackClick = onBackClick,
-                backgroundColor = RixyColors.Background,
-                titleStyle = RixyTypography.H1
-            )
+            if (onBackClick != null) {
+                DSTopBar(
+                    title = "Explorar",
+                    onBackClick = onBackClick,
+                    backgroundColor = RixyColors.Background,
+                    titleStyle = RixyTypography.H1
+                )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -90,6 +95,10 @@ fun BrowseListingsScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
+            if (onBackClick == null) {
+                DSMainHeader(title = "Explorar")
+            }
+
             // Search bar
             DSSearchField(
                 value = uiState.searchQuery,

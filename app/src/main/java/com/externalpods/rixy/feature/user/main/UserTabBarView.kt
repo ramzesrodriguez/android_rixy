@@ -19,16 +19,20 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.ShoppingBag
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -43,11 +47,17 @@ import androidx.navigation.toRoute
 import com.externalpods.rixy.core.designsystem.components.EmptyStateNoCity
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
+import com.externalpods.rixy.feature.auth.LoginScreen
+import com.externalpods.rixy.feature.auth.RegisterScreen
+import com.externalpods.rixy.feature.settings.SettingsViewModel
 import com.externalpods.rixy.feature.user.cityhome.CityHomeScreen
 import com.externalpods.rixy.feature.user.cityselector.CitySelectorScreen
 import com.externalpods.rixy.feature.user.favorites.FavoritesScreen
 import com.externalpods.rixy.feature.user.orders.OrdersScreen
 import com.externalpods.rixy.feature.settings.SettingsScreen
+import com.externalpods.rixy.feature.user.browse.BrowseListingsScreen
+import com.externalpods.rixy.feature.user.businessprofile.BusinessProfileScreen
+import com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreen
 import com.externalpods.rixy.navigation.AppStateViewModel
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
@@ -63,7 +73,7 @@ import org.koin.androidx.compose.koinViewModel
  */
 @Composable
 fun UserTabBarView(
-    appState: AppStateViewModel = koinViewModel()
+    appState: AppStateViewModel
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     val haptic = LocalHapticFeedback.current
@@ -127,11 +137,11 @@ fun UserTabBarView(
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues)) {
             when (selectedTab) {
-                0 -> HomeTab()
-                1 -> SearchTab()
+                0 -> HomeTab(appState = appState)
+                1 -> SearchTab(appState = appState)
                 2 -> FavoritesTab(appState = appState)
                 3 -> OrdersTab()
-                4 -> ProfileTab()
+                4 -> ProfileTab(appState = appState)
             }
         }
     }
@@ -146,7 +156,7 @@ data class TabItem(
 // MARK: - Home Tab (mirrors iOS HomeTabView)
 @Composable
 fun HomeTab(
-    appState: AppStateViewModel = koinViewModel()
+    appState: AppStateViewModel
 ) {
     val navController = rememberNavController()
     val selectedCity by appState.selectedCity.collectAsStateWithLifecycle()
@@ -183,16 +193,14 @@ fun HomeTab(
                         popUpTo("city_selector") { inclusive = true }
                     }
                 },
-                onBackClick = {
-                    navController.popBackStack()
-                }
+                onBackClick = null
             )
         }
         
         // Type-safe navigation destinations
         composable<ListingDetailRoute> { backStackEntry ->
             val route = backStackEntry.toRoute<ListingDetailRoute>()
-            com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreen(
+            ListingDetailScreen(
                 listingId = route.listingId,
                 citySlug = route.citySlug,
                 onBackClick = { navController.popBackStack() },
@@ -205,7 +213,7 @@ fun HomeTab(
         
         composable<BusinessProfileRoute> { backStackEntry ->
             val route = backStackEntry.toRoute<BusinessProfileRoute>()
-            com.externalpods.rixy.feature.user.businessprofile.BusinessProfileScreen(
+            BusinessProfileScreen(
                 citySlug = route.citySlug,
                 businessId = route.businessId,
                 onBackClick = { navController.popBackStack() },
@@ -218,7 +226,7 @@ fun HomeTab(
         
         composable<BrowseRoute> { backStackEntry ->
             val route = backStackEntry.toRoute<BrowseRoute>()
-            com.externalpods.rixy.feature.user.browse.BrowseListingsScreen(
+            BrowseListingsScreen(
                 citySlug = route.citySlug,
                 onBackClick = { navController.popBackStack() },
                 onListingClick = { listing ->
@@ -232,7 +240,7 @@ fun HomeTab(
 // MARK: - Search Tab
 @Composable
 fun SearchTab(
-    appState: AppStateViewModel = koinViewModel()
+    appState: AppStateViewModel
 ) {
     val navController = rememberNavController()
     val selectedCity by appState.selectedCity.collectAsStateWithLifecycle()
@@ -243,7 +251,7 @@ fun SearchTab(
     ) {
         composable("search_main") {
             if (selectedCity != null) {
-                com.externalpods.rixy.feature.user.browse.BrowseListingsScreen(
+                BrowseListingsScreen(
                     citySlug = selectedCity!!.slug,
                     onBackClick = null, // No back in search tab
                     onListingClick = { listing ->
@@ -273,7 +281,7 @@ fun SearchTab(
         
         composable<ListingDetailRoute> { backStackEntry ->
             val route = backStackEntry.toRoute<ListingDetailRoute>()
-            com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreen(
+            ListingDetailScreen(
                 listingId = route.listingId,
                 citySlug = route.citySlug,
                 onBackClick = { navController.popBackStack() },
@@ -286,7 +294,7 @@ fun SearchTab(
         
         composable<BusinessProfileRoute> { backStackEntry ->
             val route = backStackEntry.toRoute<BusinessProfileRoute>()
-            com.externalpods.rixy.feature.user.businessprofile.BusinessProfileScreen(
+            BusinessProfileScreen(
                 citySlug = route.citySlug,
                 businessId = route.businessId,
                 onBackClick = { navController.popBackStack() },
@@ -302,7 +310,7 @@ fun SearchTab(
 // MARK: - Favorites Tab
 @Composable
 fun FavoritesTab(
-    appState: AppStateViewModel = koinViewModel()
+    appState: AppStateViewModel
 ) {
     val navController = rememberNavController()
     val selectedCity by appState.selectedCity.collectAsStateWithLifecycle()
@@ -325,7 +333,7 @@ fun FavoritesTab(
         
         composable<ListingDetailRoute> { backStackEntry ->
             val route = backStackEntry.toRoute<ListingDetailRoute>()
-            com.externalpods.rixy.feature.user.listingdetail.ListingDetailScreen(
+            ListingDetailScreen(
                 listingId = route.listingId,
                 citySlug = route.citySlug,
                 onBackClick = { navController.popBackStack() },
@@ -345,11 +353,19 @@ fun OrdersTab() {
 // MARK: - Profile Tab
 @Composable
 fun ProfileTab(
-    appState: AppStateViewModel = koinViewModel()
+    appState: AppStateViewModel
 ) {
     val navController = rememberNavController()
     val isAuthenticated by appState.isAuthenticated
     val selectedCity by appState.selectedCity.collectAsStateWithLifecycle()
+    val currentUser by appState.currentUser.collectAsStateWithLifecycle()
+    val settingsViewModel: SettingsViewModel = koinViewModel()
+    val settingsUiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    val canUseOwnerMode = isAuthenticated && (
+        currentUser?.role == com.externalpods.rixy.core.model.OwnerRole.OWNER ||
+            currentUser?.role == com.externalpods.rixy.core.model.OwnerRole.ADMIN
+        )
     
     NavHost(
         navController = navController,
@@ -359,24 +375,89 @@ fun ProfileTab(
             SettingsScreen(
                 isAuthenticated = isAuthenticated,
                 selectedCityName = selectedCity?.name,
+                userEmail = settingsUiState.userEmail.takeIf { it.isNotBlank() },
+                languageLabel = settingsUiState.languageLabel,
+                canUseOwnerMode = canUseOwnerMode,
                 onNavigateToLogin = {
                     navController.navigate("login")
                 },
                 onModeChanged = { 
-                    // Switch to owner mode
-                    appState.switchMode(com.externalpods.rixy.navigation.AppMode.OWNER)
+                    settingsViewModel.switchMode(com.externalpods.rixy.core.model.AppMode.OWNER)
                 },
+                onSignOut = settingsViewModel::signOut,
                 onBackClick = null,
-                onChangeCityClick = { }
+                onLanguageClick = { showLanguageDialog = true },
+                onChangeCityClick = { navController.navigate("profile_city_selector") }
+            )
+        }
+
+        composable("profile_city_selector") {
+            CitySelectorScreen(
+                onCitySelected = { city ->
+                    appState.selectCity(city)
+                    navController.popBackStack()
+                },
+                onBackClick = { navController.popBackStack() }
             )
         }
         
         composable("login") {
-            // LoginScreen would go here
-            Box(modifier = Modifier.fillMaxSize()) {
-                Text("Login Screen - TODO")
-            }
+            LoginScreen(
+                onNavigateToRegister = {
+                    navController.navigate("register")
+                },
+                onLoginSuccess = {
+                    navController.popBackStack("profile_main", inclusive = false)
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
+
+        composable("register") {
+            RegisterScreen(
+                onNavigateToLogin = {
+                    navController.popBackStack()
+                },
+                onRegisterSuccess = {
+                    navController.popBackStack("login", inclusive = false)
+                }
+            )
+        }
+    }
+
+    if (showLanguageDialog) {
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text("Idioma") },
+            text = {
+                androidx.compose.foundation.layout.Column {
+                    TextButton(
+                        onClick = {
+                            settingsViewModel.setLanguage("es")
+                            showLanguageDialog = false
+                        }
+                    ) {
+                        Text("Español")
+                    }
+                    TextButton(
+                        onClick = {
+                            settingsViewModel.setLanguage("en")
+                            showLanguageDialog = false
+                        }
+                    ) {
+                        Text("English")
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { showLanguageDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 

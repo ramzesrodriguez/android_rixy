@@ -5,7 +5,7 @@ import com.externalpods.rixy.data.local.UserPreferences
 import com.externalpods.rixy.data.repository.FavoritesRepository
 import com.externalpods.rixy.navigation.AppStateViewModel
 import com.externalpods.rixy.feature.user.favorites.FavoritesViewModel
-import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 /**
@@ -21,7 +21,9 @@ val appModule = module {
     // Guest favorites fallback (no-auth mode)
     single { FavoritesRepository(get()) }
     
+    // App-level state (single source of truth)
+    single { AppStateViewModel(get()) }
+
     // ViewModels
-    viewModel { AppStateViewModel(get()) }
-    viewModel { FavoritesViewModel(get(), get()) }
+    viewModelOf(::FavoritesViewModel)
 }

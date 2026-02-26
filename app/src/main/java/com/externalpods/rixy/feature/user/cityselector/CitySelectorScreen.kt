@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -18,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.externalpods.rixy.core.designsystem.components.CityCard
 import com.externalpods.rixy.core.designsystem.components.CityCardSkeleton
 import com.externalpods.rixy.core.designsystem.components.DSSearchField
+import com.externalpods.rixy.core.designsystem.components.DSTopBar
 import com.externalpods.rixy.core.designsystem.components.ErrorViewGeneric
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
@@ -45,10 +49,13 @@ fun CitySelectorScreen(
     
     Scaffold(
         containerColor = RixyColors.Background,
+        modifier = Modifier.padding(top = 16.dp),
         topBar = {
-            com.externalpods.rixy.core.designsystem.components.DSTopBar(
+            DSTopBar(
                 title = "Selecciona tu ciudad",
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                backgroundColor = RixyColors.Background,
+                titleStyle = RixyTypography.H2
             )
         }
     ) { paddingValues ->

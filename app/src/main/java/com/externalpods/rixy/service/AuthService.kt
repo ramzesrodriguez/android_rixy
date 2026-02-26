@@ -63,22 +63,19 @@ class AuthService(
         }
     }
 
-    suspend fun signUp(email: String, password: String): Result<Owner> {
+    suspend fun signUp(email: String, password: String): Result<Unit> {
         _authState.value = AuthState.Loading
         return try {
             supabase.auth.signUpWith(Email) {
                 this.email = email
                 this.password = password
             }
-            val token = supabase.auth.currentSessionOrNull()?.accessToken
-            if (token != null) {
-                tokenManager.saveToken(token)
-            }
-            val user = ownerRepository.getProfile()
-            runCatching { favoritesRepository.syncLocalToRemote(ownerRepository) }
-            dataStoreManager.saveAuthState(user.id, user.email)
-            _authState.value = AuthState.Authenticated(user)
-            Result.success(user)
+            // iOS parity: sign up only creates the account; user may need to confirm email.
+            // Keep app unauthenticated until explicit sign in.
+            tokenManager.clearToken()
+            dataStoreManager.clearAuthState()
+            _authState.value = AuthState.Unauthenticated
+            Result.success(Unit)
         } catch (e: Exception) {
             val readableError = mapAuthError(e)
             _authState.value = AuthState.Error(readableError)

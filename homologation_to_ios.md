@@ -605,14 +605,20 @@ Exit criteria:
 - [ ] No placeholder screens reachable in user-critical paths.
 
 ## Phase 1 - Profile/Auth/Language Parity
-- [ ] Wire Profile -> Login -> Register real routes.
-- [ ] Wire sign-out in authenticated profile.
-- [ ] Implement language selector and runtime locale apply.
-- [ ] Add role guard before Owner/Admin mode switch.
-- [ ] Remove dead actions or hide unavailable items.
+- [x] Wire Profile -> Login -> Register real routes.
+- [x] Wire sign-out in authenticated profile.
+- [x] Implement language selector and runtime locale apply.
+- [x] Add role guard before Owner/Admin mode switch.
+- [x] Remove dead actions or hide unavailable items.
+- [x] Refresh Profile state after Login/Register via shared app state.
 
 Exit criteria:
 - [ ] Guest/auth profile flow parity approved against iOS.
+- [ ] Validate guest profile blocks against iOS (`Idioma`, `Ciudad seleccionada`, `Cuenta`, `Acerca de`).
+- [ ] Validate login navigation from Profile and back navigation behavior.
+- [ ] Validate register flow returns to Profile in authenticated state.
+- [ ] Validate sign-out returns to guest profile state without stale user data.
+- [ ] Validate language change persists after app restart.
 
 ## Phase 2 - Owner Flow Completion
 - [ ] Replace owner dashboard placeholder with full feature shell.
@@ -674,4 +680,3 @@ A screen is homologated only if all are true:
 - [ ] Refresh semantics match iOS.
 - [ ] Success and error outcomes are explicitly implemented.
 - [ ] QA checklist passed and signed.
-

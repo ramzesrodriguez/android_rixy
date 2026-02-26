@@ -19,11 +19,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddBusiness
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -103,7 +103,8 @@ fun CityHomeScreen(
                     DSOutlineButton(
                         title = "Cambiar",
                         onClick = onChangeCity,
-                        size = DSButtonSize.SMALL
+                        size = DSButtonSize.SMALL,
+                        icon = Icons.Default.LocationOn
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                 }

@@ -113,7 +113,7 @@ fun DSTextField(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(44.dp) // iOS height, not 56dp Material3
+                .height(54.dp)
                 // Focus glow effect
                 .then(
                     if (isFocused) {

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,13 +18,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -34,7 +32,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.externalpods.rixy.core.designsystem.components.DSTopBar
+import com.externalpods.rixy.core.designsystem.components.DSMainHeader
 import com.externalpods.rixy.core.designsystem.components.SectionButton
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
@@ -43,42 +41,55 @@ import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 fun SettingsScreen(
     isAuthenticated: Boolean,
     selectedCityName: String?,
+    userEmail: String? = null,
+    languageLabel: String = "Español",
+    canUseOwnerMode: Boolean = false,
     onNavigateToLogin: () -> Unit,
     onModeChanged: () -> Unit,
+    onSignOut: () -> Unit,
     onBackClick: (() -> Unit)?,
+    onLanguageClick: (() -> Unit)? = null,
     onChangeCityClick: () -> Unit = {}
 ) {
     Scaffold(
-        topBar = {
-            DSTopBar(
-                title = "Perfil",
-                onBackClick = onBackClick,
-                backgroundColor = RixyColors.Background,
-                titleStyle = RixyTypography.H1
-            )
-        }
+        containerColor = RixyColors.Background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
-        if (isAuthenticated) {
-            AuthenticatedProfileContent(
-                onNavigateToLogin = onNavigateToLogin,
-                onModeChanged = onModeChanged,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(paddingValues)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+                .background(RixyColors.Background)
+        ) {
+            DSMainHeader(
+                title = "Perfil",
+                onBackClick = onBackClick
             )
-        } else {
-            GuestProfileContent(
-                selectedCityName = selectedCityName,
-                onNavigateToLogin = onNavigateToLogin,
-                onChangeCityClick = onChangeCityClick,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(RixyColors.Background)
-                    .verticalScroll(rememberScrollState())
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-            )
+
+            if (isAuthenticated) {
+                AuthenticatedProfileContent(
+                    userEmail = userEmail,
+                    canUseOwnerMode = canUseOwnerMode,
+                    onModeChanged = onModeChanged,
+                    onSignOut = onSignOut,
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                )
+            } else {
+                GuestProfileContent(
+                    selectedCityName = selectedCityName,
+                    languageLabel = languageLabel,
+                    onNavigateToLogin = onNavigateToLogin,
+                    onLanguageClick = onLanguageClick,
+                    onChangeCityClick = onChangeCityClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                        .padding(vertical = 12.dp)
+                )
+            }
         }
     }
 }
@@ -86,7 +97,9 @@ fun SettingsScreen(
 @Composable
 private fun GuestProfileContent(
     selectedCityName: String?,
+    languageLabel: String,
     onNavigateToLogin: () -> Unit,
+    onLanguageClick: (() -> Unit)?,
     onChangeCityClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -97,9 +110,10 @@ private fun GuestProfileContent(
         GuestSectionTitle("Idioma")
         SettingsPillRow(
             title = "Idioma",
-            trailing = "Español",
+            trailing = languageLabel,
             titleColor = RixyColors.Brand,
-            onClick = { }
+            onClick = onLanguageClick,
+            showChevron = onLanguageClick != null
         )
 
         GuestSectionTitle("Ciudad seleccionada")
@@ -131,15 +145,16 @@ private fun GuestProfileContent(
 
 @Composable
 private fun AuthenticatedProfileContent(
-    onNavigateToLogin: () -> Unit,
+    userEmail: String?,
+    canUseOwnerMode: Boolean,
     onModeChanged: () -> Unit,
+    onSignOut: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
         ProfileHeaderSection(
             name = "Usuario",
-            email = "Tu cuenta está activa",
-            onLoginClick = onNavigateToLogin
+            email = userEmail ?: "Tu cuenta está activa"
         )
 
         HorizontalDivider(
@@ -147,56 +162,26 @@ private fun AuthenticatedProfileContent(
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
-        SectionHeader("Cuenta")
-        SectionButton(
-            icon = Icons.Default.Person,
-            title = "Editar Perfil",
-            onClick = { },
-            showChevron = true
-        )
-        SectionButton(
-            icon = Icons.Outlined.Notifications,
-            title = "Notificaciones",
-            onClick = { },
-            showChevron = true
-        )
-        SectionButton(
-            icon = Icons.Outlined.Security,
-            title = "Seguridad",
-            onClick = { },
-            showChevron = true
-        )
+        if (canUseOwnerMode) {
+            SectionHeader("Negocios")
+            SectionButton(
+                icon = Icons.Default.Business,
+                title = "Modo Propietario",
+                subtitle = "Administra tu negocio",
+                onClick = onModeChanged,
+                showChevron = true
+            )
 
-        HorizontalDivider(
-            color = RixyColors.Border,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
+            HorizontalDivider(
+                color = RixyColors.Border,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
 
-        SectionHeader("Negocios")
-        SectionButton(
-            icon = Icons.Default.Business,
-            title = "Modo Propietario",
-            subtitle = "Administra tu negocio",
-            onClick = onModeChanged,
-            showChevron = true
-        )
-
-        HorizontalDivider(
-            color = RixyColors.Border,
-            modifier = Modifier.padding(vertical = 8.dp)
-        )
-
-        SectionHeader("Soporte")
-        SectionButton(
-            icon = Icons.Default.Info,
-            title = "Ayuda",
-            onClick = { },
-            showChevron = true
-        )
         SectionButton(
             icon = Icons.AutoMirrored.Filled.ExitToApp,
             title = "Cerrar Sesión",
-            onClick = { },
+            onClick = onSignOut,
             showChevron = false,
             isDestructive = true
         )
@@ -254,7 +239,7 @@ private fun SettingsPillRow(
             if (showChevron) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
                     tint = RixyColors.TextTertiary
                 )
@@ -276,8 +261,7 @@ private fun SectionHeader(title: String) {
 @Composable
 private fun ProfileHeaderSection(
     name: String,
-    email: String,
-    onLoginClick: () -> Unit
+    email: String
 ) {
     Row(
         modifier = Modifier
@@ -315,13 +299,12 @@ private fun ProfileHeaderSection(
         }
 
         Surface(
-            onClick = onLoginClick,
             shape = CircleShape,
             color = RixyColors.BrandLight
         ) {
             Icon(
                 imageVector = Icons.Default.Edit,
-                contentDescription = "Login",
+                contentDescription = null,
                 tint = RixyColors.Brand,
                 modifier = Modifier.padding(8.dp)
             )

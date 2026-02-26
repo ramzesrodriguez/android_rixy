@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,6 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.externalpods.rixy.core.common.CurrencyFormatter
 import com.externalpods.rixy.core.designsystem.components.DSListingCard
 import com.externalpods.rixy.core.designsystem.components.DSListingCardSkeleton
+import com.externalpods.rixy.core.designsystem.components.DSMainHeader
 import com.externalpods.rixy.core.designsystem.components.DSSearchField
 import com.externalpods.rixy.core.designsystem.components.EmptyStateFavorites
 import com.externalpods.rixy.core.designsystem.components.EmptyStateSearch
@@ -44,6 +46,7 @@ fun FavoritesScreen(
 
     Scaffold(
         containerColor = RixyColors.Background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -51,12 +54,7 @@ fun FavoritesScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-            Text(
-                text = "Favoritos",
-                style = RixyTypography.H1,
-                color = RixyColors.TextPrimary,
-                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
-            )
+            DSMainHeader(title = "Favoritos")
 
             DSSearchField(
                 value = uiState.searchQuery,

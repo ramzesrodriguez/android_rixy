@@ -2,9 +2,11 @@ package com.externalpods.rixy
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.os.LocaleListCompat
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -17,19 +19,25 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.externalpods.rixy.core.designsystem.theme.RixyTheme
+import com.externalpods.rixy.data.local.DataStoreManager
 import com.externalpods.rixy.ui.ContentView
 import com.externalpods.rixy.service.PaymentHandler
 import com.externalpods.rixy.service.PaymentResult
 import com.externalpods.rixy.service.PaymentStatus
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import org.koin.android.ext.android.inject
 
 class MainActivity : ComponentActivity() {
     
     private val paymentHandler: PaymentHandler by inject()
+    private val dataStoreManager: DataStoreManager by inject()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val languageTag = runBlocking { dataStoreManager.appLanguage.first() }
+        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(languageTag))
         enableEdgeToEdge()
         
         // Handle deep link if activity was started from one

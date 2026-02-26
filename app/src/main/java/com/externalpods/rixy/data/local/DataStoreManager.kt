@@ -45,8 +45,17 @@ class DataStoreManager(private val context: Context) {
         prefs[APP_MODE]?.let { AppMode.valueOf(it) } ?: AppMode.USER
     }
 
+    // App language (BCP-47 tags)
+    val appLanguage: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[APP_LANGUAGE] ?: "es"
+    }
+
     suspend fun saveMode(mode: AppMode) {
         context.dataStore.edit { it[APP_MODE] = mode.name }
+    }
+
+    suspend fun saveLanguage(languageTag: String) {
+        context.dataStore.edit { it[APP_LANGUAGE] = languageTag }
     }
 
     // Auth state
@@ -90,6 +99,7 @@ class DataStoreManager(private val context: Context) {
         private val CITY_STATE = stringPreferencesKey("selected_city_state")
         private val CITY_COUNTRY = stringPreferencesKey("selected_city_country")
         private val APP_MODE = stringPreferencesKey("app_mode")
+        private val APP_LANGUAGE = stringPreferencesKey("app_language")
         private val IS_AUTHENTICATED = booleanPreferencesKey("is_authenticated")
         private val USER_ID = stringPreferencesKey("current_user_id")
         private val USER_EMAIL = stringPreferencesKey("current_user_email")
