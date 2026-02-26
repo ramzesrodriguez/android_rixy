@@ -52,7 +52,7 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 0.dp)
             .background(RixyColors.Background)
     ) {
         DSMainHeader(
