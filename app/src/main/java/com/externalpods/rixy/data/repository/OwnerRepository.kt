@@ -52,7 +52,7 @@ interface OwnerRepository {
     suspend fun createCitySlotCheckout(request: CreateCitySlotCheckoutRequest): CitySlotCheckoutResponse
     suspend fun retryCitySlotPayment(subscriptionId: String, request: CitySlotActionRequest? = null): CitySlotCheckoutResponse
     suspend fun renewCitySlotSubscription(subscriptionId: String, request: CitySlotActionRequest? = null): CitySlotCheckoutResponse
-    suspend fun confirmCitySlotPayment(subscriptionId: String)
+    suspend fun confirmCitySlotPayment(sessionId: String)
     suspend fun cancelCitySlot(subscriptionId: String, reasonCode: String? = null, note: String? = null)
     suspend fun cancelSubscription(subscriptionId: String) // Alias for cancelCitySlot
     
@@ -470,9 +470,9 @@ class OwnerRepositoryImpl(
         }
     }
 
-    override suspend fun confirmCitySlotPayment(subscriptionId: String) {
+    override suspend fun confirmCitySlotPayment(sessionId: String) {
         try {
-            val response = ownerApi.confirmCitySlotPayment(subscriptionId)
+            val response = ownerApi.confirmCitySlotPayment(ConfirmPaymentRequest(sessionId))
             if (!response.isSuccessful) {
                 throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())
             }
@@ -499,13 +499,18 @@ class OwnerRepositoryImpl(
     }
 
     override suspend fun purchaseSlot(slot: CitySlot): CitySlotCheckoutResponse {
-        // TODO: Implement slot purchase flow
-        // Create checkout request for the slot
+        val businessId = getBusiness()?.id
+            ?: throw ApiError.NotFound("Business not found for city slot checkout")
+        if (slot.listingId.isNullOrBlank()) {
+            throw ApiError.ValidationError(
+                fieldErrors = mapOf("listingId" to "Listing is required for city slot checkout")
+            )
+        }
         val request = CreateCitySlotCheckoutRequest(
-            cityId = slot.cityId,
+            businessId = businessId,
             slotType = slot.type,
             slotIndex = slot.slotIndex,
-            listingId = slot.listingId ?: ""
+            listingId = slot.listingId
         )
         return createCitySlotCheckout(request)
     }

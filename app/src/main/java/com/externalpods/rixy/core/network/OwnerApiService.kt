@@ -156,9 +156,9 @@ interface OwnerApiService {
         @Body request: CitySlotActionRequest
     ): Response<ApiResponse<CitySlotCheckoutResponse>>
 
-    @POST("owner/city-slots/{subscriptionId}/confirm")
+    @POST("owner/city-slots/confirm")
     suspend fun confirmCitySlotPayment(
-        @Path("subscriptionId") subscriptionId: String
+        @Body request: ConfirmPaymentRequest
     ): Response<ApiResponse<CitySlotSubscription>>
 
     @POST("owner/city-slots/{subscriptionId}/cancel")

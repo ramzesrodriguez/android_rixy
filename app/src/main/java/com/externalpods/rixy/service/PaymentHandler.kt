@@ -57,6 +57,7 @@ class PaymentHandler(
     fun pollPaymentConfirmation(
         type: String,
         id: String,
+        sessionId: String? = null,
         maxAttempts: Int = 10,
         initialDelayMs: Long = 2000
     ): Flow<PaymentStatus> = flow {
@@ -71,7 +72,7 @@ class PaymentHandler(
             try {
                 val isConfirmed = when (type) {
                     "featured" -> checkFeaturedPaymentStatus(id)
-                    "slot" -> checkSlotPaymentStatus(id)
+                    "slot" -> checkSlotPaymentStatus(sessionId)
                     else -> false
                 }
                 
@@ -104,9 +105,10 @@ class PaymentHandler(
         }
     }
     
-    private suspend fun checkSlotPaymentStatus(subscriptionId: String): Boolean {
+    private suspend fun checkSlotPaymentStatus(sessionId: String?): Boolean {
         return try {
-            ownerRepository.confirmCitySlotPayment(subscriptionId)
+            if (sessionId.isNullOrBlank()) return false
+            ownerRepository.confirmCitySlotPayment(sessionId)
             true
         } catch (e: Exception) {
             false

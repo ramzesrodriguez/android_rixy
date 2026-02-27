@@ -181,38 +181,43 @@ private fun CityRow(
     onClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onClick)
+                .padding(horizontal = 16.dp, vertical = 14.dp)
         ) {
-            Text(
-                text = city.name,
-                style = RixyTypography.H3,
-                color = RixyColors.TextPrimary
-            )
-            if (isSelected) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    tint = RixyColors.Brand
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = city.name,
+                    style = RixyTypography.H3,
+                    color = RixyColors.TextPrimary
                 )
+                if (isSelected) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = RixyColors.Brand
+                    )
+                }
             }
+            Text(
+                text = "${city.state ?: ""}, ${city.country ?: "MX"}".trim().trim(','),
+                style = RixyTypography.Body,
+                color = RixyColors.TextSecondary
+            )
         }
-        Text(
-            text = "${city.state ?: ""}, ${city.country ?: "MX"}".trim().trim(','),
-            style = RixyTypography.Body,
-            color = RixyColors.TextSecondary
-        )
+        // Divider outside the padding column for consistent spacing
         if (showDivider) {
             HorizontalDivider(
                 color = RixyColors.Border,
-                modifier = Modifier.padding(top = 12.dp)
+                modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
     }

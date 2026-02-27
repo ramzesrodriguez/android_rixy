@@ -32,6 +32,7 @@ import com.externalpods.rixy.core.model.CitySlotStatus
 import com.externalpods.rixy.core.model.CitySlotSubscription
 import com.externalpods.rixy.core.model.CitySlotType
 import com.externalpods.rixy.core.model.Listing
+import com.externalpods.rixy.feature.settings.CityPickerSheet
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -45,17 +46,20 @@ fun OwnerCitySlotsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    // Handle checkout URL changes - open Stripe checkout
     LaunchedEffect(uiState.checkoutUrl) {
         val checkoutUrl = uiState.checkoutUrl ?: return@LaunchedEffect
+        
+        // Clear the URL immediately to prevent re-triggering
+        viewModel.onCheckoutStarted()
+        
         runCatching {
-            context.startActivity(
-                Intent(Intent.ACTION_VIEW, Uri.parse(checkoutUrl))
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
-        }.onFailure {
-            viewModel.clearError()
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(checkoutUrl))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+        }.onFailure { error ->
+            viewModel.onCheckoutError(error.message ?: "Failed to open checkout")
         }
-        viewModel.onCheckoutCancelled()
     }
     
     Scaffold(
@@ -93,7 +97,10 @@ fun OwnerCitySlotsScreen(
                 ) {
                     // City Selector
                     item {
-                        CitySelectorHeader(cityName = uiState.selectedCityName)
+                        CitySelectorHeader(
+                            cityName = uiState.selectedCityName,
+                            onClick = { viewModel.showCityPicker() }
+                        )
                         Spacer(Modifier.height(24.dp))
                     }
                     
@@ -148,9 +155,9 @@ fun OwnerCitySlotsScreen(
                         }
                     }
                     
-                    // My Active Subscriptions Section
+                    // My Active Subscriptions Section (only ACTIVE)
                     val activeSubscriptions = uiState.subscriptions.filter { 
-                        it.status == CitySlotStatus.ACTIVE || it.status == CitySlotStatus.PENDING 
+                        it.status == CitySlotStatus.ACTIVE 
                     }
                     if (activeSubscriptions.isNotEmpty() || uiState.isLoading) {
                         item {
@@ -183,10 +190,9 @@ fun OwnerCitySlotsScreen(
                         }
                     }
                     
-                    // Subscription History Section (only EXPIRED, CANCELED - NOT PENDING or ACTIVE)
+                    // Subscription History Section (all except ACTIVE: PENDING, CANCELED, EXPIRED, PAUSED)
                     val historySubscriptions = uiState.subscriptions.filter { 
-                        it.status == CitySlotStatus.EXPIRED || 
-                        it.status == CitySlotStatus.CANCELED
+                        it.status != CitySlotStatus.ACTIVE
                     }
                     if (historySubscriptions.isNotEmpty() || uiState.subscriptions.isNotEmpty()) {
                         item {
@@ -238,6 +244,20 @@ fun OwnerCitySlotsScreen(
             }
         )
     }
+
+    if (uiState.showCityPicker) {
+        CityPickerSheet(
+            selectedCityId = uiState.selectedCity?.id,
+            cities = uiState.filteredCities,
+            searchQuery = uiState.citySearchQuery,
+            isLoading = uiState.isLoadingCities,
+            error = uiState.error,
+            onSearchQueryChange = { viewModel.onCitySearchQueryChange(it) },
+            onSelectCity = { viewModel.selectCity(it) },
+            onRetry = { viewModel.showCityPicker() },
+            onDismiss = { viewModel.dismissCityPicker() }
+        )
+    }
 }
 
 @Composable
@@ -262,10 +282,11 @@ private fun SectionHeader(
 
 @Composable
 private fun CitySelectorHeader(
-    cityName: String
+    cityName: String,
+    onClick: () -> Unit
 ) {
     Surface(
-        onClick = { /* City picker */ },
+        onClick = onClick,
         shape = RoundedCornerShape(28.dp),
         color = RixyColors.Surface,
         modifier = Modifier.fillMaxWidth()
@@ -537,7 +558,8 @@ private fun ActiveSubscriptionCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = cardBackground),
+        colors = CardDefaults.cardColors(containerColor = RixyColors.Surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         border = cardBorder
     ) {
         Column(
@@ -693,6 +715,7 @@ private fun SubscriptionHistoryCard(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = RixyColors.Surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, RixyColors.Border.copy(alpha = 0.5f))
     ) {
         Column(
@@ -757,7 +780,11 @@ private fun SubscriptionHistoryCard(
                 )
                 Spacer(Modifier.width(4.dp))
                 Text(
-                    text = "${formatDate(subscription.startAt)} – ${formatDate(subscription.endAt)}",
+                    text = if (subscription.status == CitySlotStatus.PENDING) {
+                        "Vence ${formatDate(subscription.endAt)}"
+                    } else {
+                        "${formatDate(subscription.startAt)} – ${formatDate(subscription.endAt)}"
+                    },
                     style = RixyTypography.Caption,
                     color = RixyColors.TextSecondary
                 )

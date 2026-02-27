@@ -263,15 +263,31 @@ data class CitySlot(
 
 @Serializable
 data class CitySlotCheckoutResponse(
-    @SerialName("subscription_id") val subscriptionId: String? = null,
-    @SerialName("session_id") val sessionId: String? = null,
-    @SerialName("checkout_url") val checkoutUrl: String? = null,
-    @SerialName("start_at") val startAt: String? = null,
-    @SerialName("end_at") val endAt: String? = null,
-    @SerialName("amount_cents") val amountCents: Int? = null,
+    @SerialName("subscription_id")
+    @JsonNames("subscriptionId")
+    val subscriptionId: String? = null,
+    @SerialName("session_id")
+    @JsonNames("sessionId")
+    val sessionId: String? = null,
+    @SerialName("checkout_url")
+    @JsonNames("checkoutUrl")
+    val checkoutUrl: String? = null,
+    @SerialName("start_at")
+    @JsonNames("startAt")
+    val startAt: String? = null,
+    @SerialName("end_at")
+    @JsonNames("endAt")
+    val endAt: String? = null,
+    @SerialName("amount_cents")
+    @JsonNames("amountCents")
+    val amountCents: Int? = null,
     val currency: String? = null,
-    @SerialName("client_secret") val clientSecret: String? = null,
-    @SerialName("publishable_key") val publishableKey: String? = null
+    @SerialName("client_secret")
+    @JsonNames("clientSecret")
+    val clientSecret: String? = null,
+    @SerialName("publishable_key")
+    @JsonNames("publishableKey")
+    val publishableKey: String? = null
 ) {
     val formattedPrice: String get() = "${(amountCents ?: 0) / 100.0} ${currency ?: "MXN"}"
 }

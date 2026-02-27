@@ -100,7 +100,8 @@ class MainActivity : ComponentActivity() {
                 // Start polling for confirmation
                 paymentHandler.pollPaymentConfirmation(
                     type = result.type,
-                    id = result.id
+                    id = result.id,
+                    sessionId = result.sessionId
                 ).collect { status ->
                     when (status) {
                         is PaymentStatus.Polling -> {

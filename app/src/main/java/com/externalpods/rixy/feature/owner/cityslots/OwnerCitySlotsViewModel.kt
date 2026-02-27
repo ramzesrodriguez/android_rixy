@@ -2,11 +2,12 @@ package com.externalpods.rixy.feature.owner.cityslots
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.externalpods.rixy.core.model.City
 import com.externalpods.rixy.core.model.CitySlotSubscription
 import com.externalpods.rixy.core.model.CitySlotType
 import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.core.model.PublicCitySlot
-import com.externalpods.rixy.core.model.SlotPricingItem
+import com.externalpods.rixy.core.network.dto.CitySlotActionRequest
 import com.externalpods.rixy.core.model.SlotDetail
 import com.externalpods.rixy.data.repository.CityRepository
 import com.externalpods.rixy.data.repository.OwnerRepository
@@ -43,10 +44,16 @@ data class OwnerCitySlotsUiState(
     val subscriptions: List<CitySlotSubscription> = emptyList(),
     val publicSlots: List<PublicCitySlot> = emptyList(),
     val availableSlots: List<AvailableSlot> = emptyList(),
-    val slotTypeGroups: List<SlotTypeGroup> = emptyList(), // New grouped slots
+    val slotTypeGroups: List<SlotTypeGroup> = emptyList(),
     val ownerListings: List<Listing> = emptyList(),
+    val cities: List<City> = emptyList(),
+    val filteredCities: List<City> = emptyList(),
+    val selectedCity: City? = null,
+    val citySearchQuery: String = "",
+    val isLoadingCities: Boolean = false,
     val pendingPurchaseSlot: AvailableSlot? = null,
     val showListingPicker: Boolean = false,
+    val showCityPicker: Boolean = false,
     val isLoading: Boolean = false,
     val isCreatingCheckout: Boolean = false,
     val error: String? = null,
@@ -83,6 +90,9 @@ class OwnerCitySlotsViewModel(
                 val citySlugForAvailability = selectedCity?.slug ?: business?.city?.slug
                 val citySlugForPublicSlots = selectedCity?.slug ?: business?.city?.slug
                 val cityName = selectedCity?.name ?: business?.city?.name ?: "Ciudad"
+                
+                // Store the selected city in state for the picker
+                _uiState.update { it.copy(selectedCity = selectedCity) }
 
                 // Load slot availability and public slots
                 val availability = if (citySlugForAvailability.isNullOrBlank() || cityIdForCheckout.isNullOrBlank()) {
@@ -202,7 +212,11 @@ class OwnerCitySlotsViewModel(
             _uiState.update { it.copy(isCreatingCheckout = true, error = null) }
             
             try {
-                val response = ownerRepository.retryCitySlotPayment(subscriptionId)
+                val actionRequest = CitySlotActionRequest(
+                    successUrl = "rixy://payment/success?type=slot&id=$subscriptionId&session_id={CHECKOUT_SESSION_ID}",
+                    cancelUrl = "rixy://payment/cancel?type=slot&id=$subscriptionId"
+                )
+                val response = ownerRepository.retryCitySlotPayment(subscriptionId, actionRequest)
                 response.checkoutUrl?.let { url ->
                     _uiState.update { it.copy(checkoutUrl = url, isCreatingCheckout = false) }
                 } ?: run {
@@ -224,7 +238,11 @@ class OwnerCitySlotsViewModel(
             _uiState.update { it.copy(isCreatingCheckout = true, error = null) }
             
             try {
-                val response = ownerRepository.renewCitySlotSubscription(subscriptionId)
+                val actionRequest = CitySlotActionRequest(
+                    successUrl = "rixy://payment/success?type=slot&id=$subscriptionId&session_id={CHECKOUT_SESSION_ID}",
+                    cancelUrl = "rixy://payment/cancel?type=slot&id=$subscriptionId"
+                )
+                val response = ownerRepository.renewCitySlotSubscription(subscriptionId, actionRequest)
                 response.checkoutUrl?.let { url ->
                     _uiState.update { it.copy(checkoutUrl = url, isCreatingCheckout = false) }
                 } ?: run {
@@ -250,6 +268,15 @@ class OwnerCitySlotsViewModel(
         _uiState.update { it.copy(checkoutUrl = null) }
     }
 
+    fun onCheckoutStarted() {
+        // Clear the checkout URL to prevent re-triggering the same URL
+        _uiState.update { it.copy(checkoutUrl = null) }
+    }
+
+    fun onCheckoutError(errorMessage: String) {
+        _uiState.update { it.copy(checkoutUrl = null, error = errorMessage) }
+    }
+
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
@@ -269,6 +296,73 @@ class OwnerCitySlotsViewModel(
                 pendingPurchaseSlot = null,
                 showListingPicker = false
             )
+        }
+    }
+
+    // City picker functions
+    fun showCityPicker() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingCities = true) }
+            try {
+                // Load cities if not already loaded
+                if (_uiState.value.cities.isEmpty()) {
+                    val cities = cityRepository.getCities()
+                    _uiState.update { 
+                        it.copy(
+                            cities = cities,
+                            filteredCities = cities,
+                            showCityPicker = true,
+                            isLoadingCities = false
+                        )
+                    }
+                } else {
+                    _uiState.update { 
+                        it.copy(
+                            filteredCities = it.cities,
+                            showCityPicker = true,
+                            isLoadingCities = false
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message, isLoadingCities = false) }
+            }
+        }
+    }
+
+    fun dismissCityPicker() {
+        _uiState.update { it.copy(showCityPicker = false, citySearchQuery = "") }
+    }
+
+    fun onCitySearchQueryChange(query: String) {
+        val allCities = _uiState.value.cities
+        val filtered = if (query.isBlank()) {
+            allCities
+        } else {
+            allCities.filter { city ->
+                city.name.contains(query, ignoreCase = true) ||
+                city.state?.contains(query, ignoreCase = true) == true
+            }
+        }
+        _uiState.update { it.copy(citySearchQuery = query, filteredCities = filtered) }
+    }
+
+    fun selectCity(city: City) {
+        viewModelScope.launch {
+            // Update app state with selected city
+            appState.selectCity(city)
+            
+            _uiState.update { 
+                it.copy(
+                    selectedCity = city,
+                    selectedCityName = city.name,
+                    showCityPicker = false,
+                    citySearchQuery = ""
+                )
+            }
+            
+            // Reload data for new city
+            loadSubscriptions()
         }
     }
 
