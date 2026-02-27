@@ -1,6 +1,5 @@
 package com.externalpods.rixy.feature.owner.featured
 
-import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,6 +24,7 @@ import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.core.model.ListingType
+import androidx.browser.customtabs.CustomTabsIntent
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,10 +39,10 @@ fun FeaturedCampaignsScreen(
     LaunchedEffect(uiState.checkoutUrl) {
         val checkoutUrl = uiState.checkoutUrl ?: return@LaunchedEffect
         runCatching {
-            context.startActivity(
-                Intent(Intent.ACTION_VIEW, Uri.parse(checkoutUrl))
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
+            val customTabsIntent = CustomTabsIntent.Builder()
+                .setShowTitle(true)
+                .build()
+            customTabsIntent.launchUrl(context, Uri.parse(checkoutUrl))
         }
         viewModel.onCheckoutCancelled()
     }

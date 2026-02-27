@@ -1,6 +1,5 @@
 package com.externalpods.rixy.feature.owner.cityslots
 
-import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -33,6 +32,7 @@ import com.externalpods.rixy.core.model.CitySlotSubscription
 import com.externalpods.rixy.core.model.CitySlotType
 import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.feature.settings.CityPickerSheet
+import androidx.browser.customtabs.CustomTabsIntent
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.util.*
@@ -54,9 +54,10 @@ fun OwnerCitySlotsScreen(
         viewModel.onCheckoutStarted()
         
         runCatching {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(checkoutUrl))
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
+            val customTabsIntent = CustomTabsIntent.Builder()
+                .setShowTitle(true)
+                .build()
+            customTabsIntent.launchUrl(context, Uri.parse(checkoutUrl))
         }.onFailure { error ->
             viewModel.onCheckoutError(error.message ?: "Failed to open checkout")
         }

@@ -161,9 +161,11 @@ private fun FavoritesTypeFilters(
                 },
                 label = { Text(type.displayName, style = RixyTypography.Body) },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = RixyColors.Brand.copy(alpha = 0.15f),
-                    selectedLabelColor = RixyColors.Brand
-                )
+                    selectedContainerColor = RixyColors.Brand,
+                    selectedLabelColor = RixyColors.White,
+                    containerColor = RixyColors.White,
+                    labelColor = RixyColors.TextPrimary
+                ),
             )
         }
     }

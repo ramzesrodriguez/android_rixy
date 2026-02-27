@@ -5,20 +5,20 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class OwnerAnalyticsOverview(
-    @SerialName("range_days") val rangeDays: Int,
+    @SerialName("rangeDays") val rangeDays: Int,
     val totals: AnalyticsTotals,
-    @SerialName("listing_views_by_type") val listingViewsByType: ListingViewsByType,
-    @SerialName("top_listings") val topListings: List<TopListing> = emptyList()
+    @SerialName("listingViewsByType") val listingViewsByType: ListingViewsByType,
+    @SerialName("topListings") val topListings: List<TopListing> = emptyList()
 )
 
 @Serializable
 data class AnalyticsTotals(
-    @SerialName("business_views") val businessViews: Int = 0,
-    @SerialName("listing_views") val listingViews: Int = 0,
-    @SerialName("total_views") val totalViews: Int = 0,
-    @SerialName("unique_visitors") val uniqueVisitors: Int = 0,
-    @SerialName("returning_visitors") val returningVisitors: Int = 0,
-    @SerialName("avg_dwell_ms") val avgDwellMs: Int = 0
+    @SerialName("businessViews") val businessViews: Int = 0,
+    @SerialName("listingViews") val listingViews: Int = 0,
+    @SerialName("totalViews") val totalViews: Int = 0,
+    @SerialName("uniqueVisitors") val uniqueVisitors: Int = 0,
+    @SerialName("returningVisitors") val returningVisitors: Int = 0,
+    @SerialName("avgDwellMs") val avgDwellMs: Int = 0
 )
 
 @Serializable

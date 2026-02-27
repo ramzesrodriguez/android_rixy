@@ -12,6 +12,7 @@ import com.externalpods.rixy.feature.owner.cityslots.OwnerCitySlotsViewModel
 import com.externalpods.rixy.feature.owner.dashboard.OwnerDashboardViewModel
 import com.externalpods.rixy.feature.owner.featured.FeaturedCampaignsViewModel
 import com.externalpods.rixy.feature.owner.listings.ListingEditorViewModel
+import com.externalpods.rixy.feature.owner.listings.OwnerListingsViewModel
 import com.externalpods.rixy.feature.settings.SettingsViewModel
 import com.externalpods.rixy.feature.user.browse.BrowseListingsViewModel
 // FavoritesViewModel is defined in AppModule
@@ -67,6 +68,7 @@ val featureModule = module {
     viewModel { params -> ListingEditorViewModel(get(), get(), params.getOrNull<String>()) }
     viewModelOf(::FeaturedCampaignsViewModel)
     viewModelOf(::OwnerCitySlotsViewModel)
+    viewModelOf(::OwnerListingsViewModel)
     
     // Admin Mode
     viewModelOf(::AdminDashboardViewModel)

@@ -9,7 +9,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Analytics
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,6 +37,7 @@ import com.externalpods.rixy.feature.owner.business.BusinessEditorScreen
 import com.externalpods.rixy.feature.owner.cityslots.OwnerCitySlotsScreen
 import com.externalpods.rixy.feature.owner.featured.FeaturedCampaignsScreen
 import com.externalpods.rixy.feature.owner.listings.ListingEditorScreen
+import com.externalpods.rixy.feature.owner.listings.OwnerListingsScreen
 import org.koin.androidx.compose.koinViewModel
 
 private const val OWNER_HOME_ROUTE = "owner_home"
@@ -41,6 +45,7 @@ private const val OWNER_BUSINESS_EDITOR_ROUTE = "owner_business_editor"
 private const val OWNER_LISTING_EDITOR_BASE_ROUTE = "owner_listing_editor"
 private const val OWNER_FEATURED_ROUTE = "owner_featured"
 private const val OWNER_CITY_SLOTS_ROUTE = "owner_city_slots"
+private const val OWNER_LISTINGS_ROUTE = "owner_listings"
 
 @Composable
 fun OwnerDashboardScreen(
@@ -61,7 +66,8 @@ fun OwnerDashboardScreen(
                 onCitySlots = { navController.navigate(OWNER_CITY_SLOTS_ROUTE) },
                 onEditListing = { listingId ->
                     navController.navigate("$OWNER_LISTING_EDITOR_BASE_ROUTE?listingId=$listingId")
-                }
+                },
+                onViewAllListings = { navController.navigate(OWNER_LISTINGS_ROUTE) }
             )
         }
 
@@ -100,6 +106,16 @@ fun OwnerDashboardScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }
+
+        composable(OWNER_LISTINGS_ROUTE) {
+            OwnerListingsScreen(
+                onBackClick = { navController.popBackStack() },
+                onNewListing = { navController.navigate(OWNER_LISTING_EDITOR_BASE_ROUTE) },
+                onEditListing = { listingId ->
+                    navController.navigate("$OWNER_LISTING_EDITOR_BASE_ROUTE?listingId=$listingId")
+                }
+            )
+        }
     }
 }
 
@@ -112,6 +128,7 @@ private fun OwnerDashboardHome(
     onFeatured: () -> Unit,
     onCitySlots: () -> Unit,
     onEditListing: (String) -> Unit,
+    onViewAllListings: () -> Unit,
     viewModel: OwnerDashboardViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -217,12 +234,19 @@ private fun OwnerDashboardHome(
                         )
                     }
 
+                    // Analytics Section
+                    item {
+                        AnalyticsSection(
+                            analytics = uiState.analytics
+                        )
+                    }
+
                     // Recent Listings
                     item {
                         RecentListingsSection(
                             listings = uiState.recentListings,
                             onEditListing = onEditListing,
-                            onViewAll = { /* TODO: Navigate to all listings */ }
+                            onViewAll = onViewAllListings
                         )
                     }
                 }
@@ -594,6 +618,23 @@ private fun ListingRow(
         else -> RixyColors.TextSecondary
     }
 
+    val statusText = when (listing.status) {
+        ListingStatus.PUBLISHED -> "Publicado"
+        ListingStatus.PENDING_REVIEW -> "En revisión"
+        ListingStatus.DRAFT -> "Borrador"
+        else -> listing.status?.name ?: "Borrador"
+    }
+
+    // Type badge colors like iOS
+    val (typeBgColor, typeTextColor, typeIcon) = when (listing.type) {
+        com.externalpods.rixy.core.model.ListingType.PRODUCT -> 
+            Triple(RixyColors.Brand.copy(alpha = 0.15f), RixyColors.Brand, Icons.Default.Inventory)
+        com.externalpods.rixy.core.model.ListingType.SERVICE -> 
+            Triple(RixyColors.Community.copy(alpha = 0.15f), RixyColors.Community, Icons.Default.Schedule)
+        com.externalpods.rixy.core.model.ListingType.EVENT -> 
+            Triple(RixyColors.Warning.copy(alpha = 0.15f), RixyColors.Warning, Icons.Default.Event)
+    }
+
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -606,13 +647,37 @@ private fun ListingRow(
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.Default.Description,
-                contentDescription = null,
-                tint = RixyColors.TextTertiary,
-                modifier = Modifier.size(20.dp)
-            )
+            // Type badge (like iOS)
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(typeBgColor)
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = typeIcon,
+                        contentDescription = null,
+                        tint = typeTextColor,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        text = when (listing.type) {
+                            com.externalpods.rixy.core.model.ListingType.PRODUCT -> "Producto"
+                            com.externalpods.rixy.core.model.ListingType.SERVICE -> "Servicio"
+                            com.externalpods.rixy.core.model.ListingType.EVENT -> "Evento"
+                        },
+                        style = RixyTypography.CaptionSmall,
+                        color = typeTextColor,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
             Spacer(Modifier.width(12.dp))
+            
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = listing.title,
@@ -621,25 +686,207 @@ private fun ListingRow(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = listing.type.name,
-                    style = RixyTypography.CaptionSmall,
-                    color = RixyColors.TextSecondary
-                )
+                Spacer(Modifier.height(4.dp))
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = statusColor.copy(alpha = 0.12f)
+                ) {
+                    Text(
+                        text = statusText,
+                        style = RixyTypography.CaptionSmall,
+                        color = statusColor,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
             }
+            
             Spacer(Modifier.width(8.dp))
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = statusColor.copy(alpha = 0.15f)
+            
+            // Arrow
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = RixyColors.TextTertiary,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun AnalyticsSection(
+    analytics: com.externalpods.rixy.core.model.OwnerAnalyticsOverview?
+) {
+    Column {
+        Text(
+            text = "Analytics (Últimos 30 días)",
+            style = RixyTypography.H3,
+            color = RixyColors.TextPrimary
+        )
+        Spacer(Modifier.height(12.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = RixyColors.Surface)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
             ) {
-                Text(
-                    text = listing.status?.name ?: "DRAFT",
-                    style = RixyTypography.CaptionSmall,
-                    color = statusColor,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                )
+                if (analytics != null) {
+                    // Analytics rows
+                    AnalyticsRow(
+                        label = "Vistas totales",
+                        value = analytics.totals.totalViews.toString()
+                    )
+                    AnalyticsRow(
+                        label = "Vistas de publicaciones",
+                        value = analytics.totals.listingViews.toString()
+                    )
+                    AnalyticsRow(
+                        label = "Vistas de negocio",
+                        value = analytics.totals.businessViews.toString()
+                    )
+                    AnalyticsRow(
+                        label = "Visitantes únicos",
+                        value = analytics.totals.uniqueVisitors.toString(),
+                        isLast = true
+                    )
+                } else {
+                    // Empty state
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Outlined.Analytics,
+                                contentDescription = null,
+                                tint = RixyColors.TextTertiary,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Text(
+                                text = "No hay datos disponibles",
+                                style = RixyTypography.Body,
+                                color = RixyColors.TextSecondary
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = "Los analytics aparecerán cuando tengas publicaciones activas",
+                                style = RixyTypography.Caption,
+                                color = RixyColors.TextTertiary,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
+                        }
+                    }
+                }
             }
+        }
+
+        // Top Listings
+        if (analytics?.topListings?.isNotEmpty() == true) {
+            Spacer(Modifier.height(20.dp))
+            Text(
+                text = "Publicaciones más vistas",
+                style = RixyTypography.H3,
+                color = RixyColors.TextPrimary
+            )
+            Spacer(Modifier.height(12.dp))
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = RixyColors.Surface)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    analytics.topListings.forEachIndexed { index, topListing ->
+                        TopListingRow(
+                            title = topListing.title,
+                            views = topListing.views,
+                            isLast = index == analytics.topListings.lastIndex
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnalyticsRow(
+    label: String,
+    value: String,
+    isLast: Boolean = false
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label,
+                style = RixyTypography.Body,
+                color = RixyColors.TextSecondary
+            )
+            Text(
+                text = value,
+                style = RixyTypography.H4,
+                color = RixyColors.TextPrimary,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+        if (!isLast) {
+            HorizontalDivider(
+                color = RixyColors.Border.copy(alpha = 0.5f),
+                thickness = 0.5.dp
+            )
+        }
+    }
+}
+
+@Composable
+private fun TopListingRow(
+    title: String,
+    views: Int,
+    isLast: Boolean = false
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                style = RixyTypography.BodyMedium,
+                color = RixyColors.TextPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                text = "$views vistas",
+                style = RixyTypography.Body,
+                color = RixyColors.TextSecondary
+            )
+        }
+        if (!isLast) {
+            HorizontalDivider(
+                color = RixyColors.Border.copy(alpha = 0.5f),
+                thickness = 0.5.dp
+            )
         }
     }
 }
