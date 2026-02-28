@@ -277,5 +277,5 @@ private fun StatItem(
 }
 
 private fun formatCount(count: Int?): String {
-    return count?.toString() ?: "N/D"
+    return count?.toString() ?: "0"
 }

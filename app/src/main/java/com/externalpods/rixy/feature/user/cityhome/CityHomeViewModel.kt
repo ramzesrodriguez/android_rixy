@@ -56,6 +56,10 @@ class CityHomeViewModel(
             
             getCityHomeUseCase(citySlug)
                 .onSuccess { cityHome ->
+                    val cityInfo = runCatching {
+                        cityRepository.getCityInfo(citySlug)
+                    }.getOrNull()
+
                     val sections = runCatching {
                         cityRepository.getCitySections(citySlug)
                     }.getOrElse { emptyList() }
@@ -75,6 +79,14 @@ class CityHomeViewModel(
                         cityRepository.getCitySlots(citySlug)
                     }.getOrElse { emptyList() }
 
+                    val baseCity = cityInfo ?: cityHome.city
+                    val heroCity = applyHeroCountFallbacks(
+                        city = baseCity,
+                        featured = cityHome.featured,
+                        feed = cityHome.feed,
+                        slots = slots
+                    )
+
                     Log.d(
                         TAG,
                         "Loaded city=$citySlug homeFeed=${cityHome.feed.size} sections=${sections.size} sectionItems=${sectionItems.values.sumOf { it.size }} slots=${slots.size}"
@@ -82,7 +94,7 @@ class CityHomeViewModel(
 
                     _uiState.update { state ->
                         state.copy(
-                            city = cityHome.city,
+                            city = heroCity,
                             featured = cityHome.featured,
                             feed = cityHome.feed,
                             sections = sections.ifEmpty { cityHome.sections },
@@ -103,6 +115,41 @@ class CityHomeViewModel(
                     }
                 }
         }
+    }
+
+    private fun applyHeroCountFallbacks(
+        city: City,
+        featured: Listing?,
+        feed: List<Listing>,
+        slots: List<PublicCitySlot>
+    ): City {
+        val businessIds = mutableSetOf<String>()
+        feed.mapNotNullTo(businessIds) { it.businessId }
+        featured?.businessId?.let { businessIds.add(it) }
+        slots.forEach { slot ->
+            val businessId = slot.listing?.business?.id ?: slot.business?.id
+            if (!businessId.isNullOrBlank()) businessIds.add(businessId)
+        }
+
+        val listingIds = mutableSetOf<String>()
+        feed.mapTo(listingIds) { it.id }
+        featured?.id?.let { listingIds.add(it) }
+        slots.forEach { slot ->
+            slot.listing?.id?.let { listingIds.add(it) }
+        }
+
+        val derivedBusinessCount = businessIds.size.takeIf { it > 0 }
+        val derivedListingCount = listingIds.size.takeIf { it > 0 }
+        val derivedSubscriptionCount = slots.size.takeIf { it > 0 }
+
+        return city.copy(
+            totalBusinesses = city.totalBusinesses ?: city.businessCount ?: derivedBusinessCount,
+            totalListings = city.totalListings ?: city.listingCount ?: derivedListingCount,
+            subscriptionsCount = city.subscriptionsCount
+                ?: city.citySlotSubscriptionsCount
+                ?: city.citySlotSubscriptions?.size
+                ?: derivedSubscriptionCount
+        )
     }
 
     fun refresh() {

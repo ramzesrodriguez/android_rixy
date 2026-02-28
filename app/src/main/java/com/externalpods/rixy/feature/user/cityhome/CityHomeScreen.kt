@@ -174,9 +174,9 @@ private fun CityHomeContent(
             DSCityHeroSection(
                 cityName = city.name,
                 location = listOfNotNull(city.state, city.country).joinToString(", ").ifEmpty { null },
-                businessCount = city.resolvedBusinessCount,
-                listingCount = city.resolvedListingCount,
-                subscriptionCount = city.resolvedSubscriptionCount
+                businessCount = city.resolvedBusinessCountOrNull,
+                listingCount = city.resolvedListingCountOrNull,
+                subscriptionCount = city.resolvedSubscriptionCountOrNull
             )
         }
         

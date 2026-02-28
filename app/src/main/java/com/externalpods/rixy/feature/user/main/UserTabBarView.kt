@@ -13,12 +13,10 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.ShoppingBag
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -54,7 +52,6 @@ import com.externalpods.rixy.feature.user.cityhome.CityHomeScreen
 import com.externalpods.rixy.feature.user.cityselector.CitySelectorScreen
 import com.externalpods.rixy.feature.user.cityselector.CitySelectorViewModel
 import com.externalpods.rixy.feature.user.favorites.FavoritesScreen
-import com.externalpods.rixy.feature.user.orders.OrdersScreen
 import com.externalpods.rixy.feature.settings.SettingsScreen
 import com.externalpods.rixy.feature.settings.ModePickerSheet
 import com.externalpods.rixy.feature.user.browse.BrowseListingsScreen
@@ -69,7 +66,8 @@ import androidx.compose.foundation.layout.WindowInsets
  * UserTabBarView - iOS-style Tab Bar (mirrors iOS UserTabBarView)
  * 
  * Features:
- * - 5 tabs: Home, Search, Favorites, Orders, Profile
+ * - 4 tabs visible for now: Home, Search, Favorites, Profile
+ * - Orders tab is temporarily hidden until the feature is enabled
  * - Each tab has its OWN NavigationHost (like iOS NavigationStack)
  * - Icon scale animation on selection (1.1x)
  * - Brand tint color
@@ -85,7 +83,7 @@ fun UserTabBarView(
         TabItem("Inicio", Icons.Filled.Home, Icons.Outlined.Home),
         TabItem("Buscar", Icons.Filled.Search, Icons.Outlined.Search),
         TabItem("Favoritos", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder),
-        TabItem("Pedidos", Icons.Filled.ShoppingBag, Icons.Outlined.ShoppingBag),
+        // Future: re-enable the Orders tab when the orders flow is ready.
         TabItem("Perfil", Icons.Filled.Person, Icons.Outlined.Person)
     )
     
@@ -143,8 +141,7 @@ fun UserTabBarView(
                 0 -> HomeTab(appState = appState)
                 1 -> SearchTab(appState = appState)
                 2 -> FavoritesTab(appState = appState)
-                3 -> OrdersTab()
-                4 -> ProfileTab(appState = appState)
+                3 -> ProfileTab(appState = appState)
             }
         }
     }
@@ -345,12 +342,6 @@ fun FavoritesTab(
             )
         }
     }
-}
-
-// MARK: - Orders Tab
-@Composable
-fun OrdersTab() {
-    OrdersScreen(onBackClick = null)
 }
 
 // MARK: - Profile Tab

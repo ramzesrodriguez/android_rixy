@@ -2,6 +2,7 @@ package com.externalpods.rixy.service
 
 import com.externalpods.rixy.core.model.Owner
 import com.externalpods.rixy.core.network.ApiConfig
+import com.externalpods.rixy.core.network.AuthTokenRefresher
 import com.externalpods.rixy.data.local.DataStoreManager
 import com.externalpods.rixy.data.local.TokenManager
 import com.externalpods.rixy.data.repository.FavoritesRepository
@@ -28,7 +29,8 @@ class AuthService(
     private val tokenManager: TokenManager,
     private val dataStoreManager: DataStoreManager,
     private val ownerRepository: OwnerRepository,
-    private val favoritesRepository: FavoritesRepository
+    private val favoritesRepository: FavoritesRepository,
+    private val tokenRefresher: AuthTokenRefresher
 ) {
     private val supabase: SupabaseClient = createSupabaseClient(
         supabaseUrl = ApiConfig.SUPABASE_URL,
@@ -54,6 +56,7 @@ class AuthService(
                     accessToken = token,
                     refreshToken = session.refreshToken
                 )
+                tokenRefresher.resetRefreshState()
             }
             val user = ownerRepository.getProfile()
             runCatching { favoritesRepository.syncLocalToRemote(ownerRepository) }
