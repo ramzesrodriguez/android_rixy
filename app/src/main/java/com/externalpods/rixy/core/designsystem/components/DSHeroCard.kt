@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -70,7 +71,7 @@ fun DSHeroSlotCard(
             DSAsyncImage(
                 imageUrl = imageUrl,
                 contentDescription = title,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
             
@@ -192,7 +193,6 @@ fun DSCityHeroSection(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(200.dp)
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(24.dp))
             .background(
@@ -203,12 +203,12 @@ fun DSCityHeroSection(
                     )
                 )
             )
-            .padding(24.dp)
+            .padding(horizontal = 24.dp, vertical = 20.dp),
+        contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // City name
             Text(
@@ -277,5 +277,5 @@ private fun StatItem(
 }
 
 private fun formatCount(count: Int?): String {
-    return count?.toString() ?: "N/D"
+    return count?.toString() ?: "0"
 }

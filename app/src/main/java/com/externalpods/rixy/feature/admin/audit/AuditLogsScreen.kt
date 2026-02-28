@@ -27,10 +27,8 @@ fun AuditLogsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Logs de Auditoría", style = RixyTypography.H4) },
                 navigationIcon = { IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) } }
             )

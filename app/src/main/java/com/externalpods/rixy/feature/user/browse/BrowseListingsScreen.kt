@@ -21,6 +21,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SelectableChipElevation
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -77,7 +78,6 @@ fun BrowseListingsScreen(
     }
     
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             if (onBackClick != null) {
                 DSTopBar(
@@ -227,9 +227,11 @@ private fun TypeFilterChips(
                 onClick = { onTypeSelected(type) },
                 label = { Text(label, style = RixyTypography.Body) },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = RixyColors.Brand.copy(alpha = 0.15f),
-                    selectedLabelColor = RixyColors.Brand
-                )
+                    selectedContainerColor = RixyColors.Brand,
+                    selectedLabelColor = RixyColors.White,
+                    containerColor = RixyColors.White,
+                    labelColor = RixyColors.TextPrimary
+                ),
             )
         }
     }

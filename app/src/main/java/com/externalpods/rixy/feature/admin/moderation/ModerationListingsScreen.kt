@@ -33,10 +33,8 @@ fun ModerationListingsScreen(
     var showDialog by remember { mutableStateOf<Listing?>(null) }
     
     Scaffold(
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
-                windowInsets = WindowInsets(0, 0, 0, 0),
                 title = { Text("Moderar Anuncios", style = RixyTypography.H4) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, null) }

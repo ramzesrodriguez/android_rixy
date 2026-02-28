@@ -46,14 +46,13 @@ interface OwnerRepository {
     suspend fun deleteBusinessSection(sectionId: String)
     
     // City Slots
-    suspend fun getCitySlots(): List<CitySlotSubscription>
-    suspend fun getCitySlotAvailability(cityId: String): CitySlotAvailabilityResponse
+    suspend fun getCitySlotAvailability(citySlug: String): CitySlotAvailabilityResponse
     suspend fun getCitySlotSubscriptions(): List<CitySlotSubscription>
     suspend fun getCitySlotSubscriptionHistory(): List<CitySlotSubscription>
     suspend fun createCitySlotCheckout(request: CreateCitySlotCheckoutRequest): CitySlotCheckoutResponse
     suspend fun retryCitySlotPayment(subscriptionId: String, request: CitySlotActionRequest? = null): CitySlotCheckoutResponse
     suspend fun renewCitySlotSubscription(subscriptionId: String, request: CitySlotActionRequest? = null): CitySlotCheckoutResponse
-    suspend fun confirmCitySlotPayment(subscriptionId: String)
+    suspend fun confirmCitySlotPayment(sessionId: String)
     suspend fun cancelCitySlot(subscriptionId: String, reasonCode: String? = null, note: String? = null)
     suspend fun cancelSubscription(subscriptionId: String) // Alias for cancelCitySlot
     
@@ -385,23 +384,9 @@ class OwnerRepositoryImpl(
         }
     }
 
-    // City Slots
-    override suspend fun getCitySlots(): List<CitySlotSubscription> {
+    override suspend fun getCitySlotAvailability(citySlug: String): CitySlotAvailabilityResponse {
         return try {
-            val response = ownerApi.getCitySlots()
-            if (response.isSuccessful) {
-                response.body()?.data ?: emptyList()
-            } else {
-                throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())
-            }
-        } catch (e: Exception) {
-            throw ApiError.fromThrowable(e)
-        }
-    }
-
-    override suspend fun getCitySlotAvailability(cityId: String): CitySlotAvailabilityResponse {
-        return try {
-            val response = ownerApi.getCitySlotAvailability(cityId)
+            val response = ownerApi.getCitySlotAvailability(citySlug)
             if (response.isSuccessful) {
                 response.body()?.data ?: throw ApiError.NotFound("Slot availability not found")
             } else {
@@ -485,9 +470,9 @@ class OwnerRepositoryImpl(
         }
     }
 
-    override suspend fun confirmCitySlotPayment(subscriptionId: String) {
+    override suspend fun confirmCitySlotPayment(sessionId: String) {
         try {
-            val response = ownerApi.confirmCitySlotPayment(subscriptionId)
+            val response = ownerApi.confirmCitySlotPayment(ConfirmPaymentRequest(sessionId))
             if (!response.isSuccessful) {
                 throw ApiError.fromHttpCode(response.code(), response.errorBody()?.string())
             }
@@ -514,13 +499,18 @@ class OwnerRepositoryImpl(
     }
 
     override suspend fun purchaseSlot(slot: CitySlot): CitySlotCheckoutResponse {
-        // TODO: Implement slot purchase flow
-        // Create checkout request for the slot
+        val businessId = getBusiness()?.id
+            ?: throw ApiError.NotFound("Business not found for city slot checkout")
+        if (slot.listingId.isNullOrBlank()) {
+            throw ApiError.ValidationError(
+                fieldErrors = mapOf("listingId" to "Listing is required for city slot checkout")
+            )
+        }
         val request = CreateCitySlotCheckoutRequest(
-            cityId = slot.cityId,
+            businessId = businessId,
             slotType = slot.type,
             slotIndex = slot.slotIndex,
-            listingId = slot.listingId ?: ""
+            listingId = slot.listingId
         )
         return createCitySlotCheckout(request)
     }

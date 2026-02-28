@@ -621,10 +621,10 @@ Exit criteria:
 - [ ] Validate language change persists after app restart.
 
 ## Phase 2 - Owner Flow Completion
-- [ ] Replace owner dashboard placeholder with full feature shell.
-- [ ] Fix business create city binding.
-- [ ] Fix city slots purchase listing selection.
-- [ ] Complete featured/slots payment callback confirm + polling.
+- [x] Replace owner dashboard placeholder with full feature shell.
+- [x] Fix business create city binding.
+- [x] Fix city slots purchase listing selection.
+- [x] Complete featured/slots payment callback confirm + polling.
 - [ ] Validate owner editors against iOS interaction sequence.
 
 Exit criteria:

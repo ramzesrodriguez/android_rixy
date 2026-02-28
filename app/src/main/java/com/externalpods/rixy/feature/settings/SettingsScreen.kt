@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,23 +16,20 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
+
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.externalpods.rixy.core.designsystem.components.DSMainHeader
-import com.externalpods.rixy.core.designsystem.components.SectionButton
 import com.externalpods.rixy.core.designsystem.theme.RixyColors
 import com.externalpods.rixy.core.designsystem.theme.RixyTypography
 
@@ -43,6 +39,7 @@ fun SettingsScreen(
     selectedCityName: String?,
     userEmail: String? = null,
     languageLabel: String = "Español",
+    currentModeLabel: String = "Usuario",
     canUseOwnerMode: Boolean = false,
     onNavigateToLogin: () -> Unit,
     onModeChanged: () -> Unit,
@@ -51,45 +48,47 @@ fun SettingsScreen(
     onLanguageClick: (() -> Unit)? = null,
     onChangeCityClick: () -> Unit = {}
 ) {
-    Scaffold(
-        containerColor = RixyColors.Background,
-        contentWindowInsets = WindowInsets(0, 0, 0, 0)
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
-                .background(RixyColors.Background)
-        ) {
-            DSMainHeader(
-                title = "Perfil",
-                onBackClick = onBackClick
-            )
+    // Note: No Scaffold here - parent (UserTabBarView) already has one
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 0.dp)
+            .background(RixyColors.Background)
+    ) {
+        DSMainHeader(
+            title = "Perfil",
+            onBackClick = onBackClick
+        )
 
-            if (isAuthenticated) {
-                AuthenticatedProfileContent(
-                    userEmail = userEmail,
-                    canUseOwnerMode = canUseOwnerMode,
-                    onModeChanged = onModeChanged,
-                    onSignOut = onSignOut,
-                    modifier = Modifier
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState())
-                )
-            } else {
-                GuestProfileContent(
-                    selectedCityName = selectedCityName,
-                    languageLabel = languageLabel,
-                    onNavigateToLogin = onNavigateToLogin,
-                    onLanguageClick = onLanguageClick,
-                    onChangeCityClick = onChangeCityClick,
-                    modifier = Modifier
-                        .weight(1f)
-                        .verticalScroll(rememberScrollState())
-                        .padding(vertical = 12.dp)
-                )
-            }
+        if (isAuthenticated) {
+            AuthenticatedProfileContent(
+                userEmail = userEmail,
+                selectedCityName = selectedCityName,
+                languageLabel = languageLabel,
+                currentModeLabel = currentModeLabel,
+                canUseOwnerMode = canUseOwnerMode,
+                onModeChanged = onModeChanged,
+                onSignOut = onSignOut,
+                onLanguageClick = onLanguageClick,
+                onChangeCityClick = onChangeCityClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 80.dp)
+            )
+        } else {
+            GuestProfileContent(
+                selectedCityName = selectedCityName,
+                languageLabel = languageLabel,
+                onNavigateToLogin = onNavigateToLogin,
+                onLanguageClick = onLanguageClick,
+                onChangeCityClick = onChangeCityClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(vertical = 12.dp)
+                    .padding(bottom = 80.dp)
+            )
         }
     }
 }
@@ -105,7 +104,7 @@ private fun GuestProfileContent(
 ) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(20.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         GuestSectionTitle("Idioma")
         SettingsPillRow(
@@ -146,44 +145,68 @@ private fun GuestProfileContent(
 @Composable
 private fun AuthenticatedProfileContent(
     userEmail: String?,
+    selectedCityName: String?,
+    languageLabel: String,
+    currentModeLabel: String,
     canUseOwnerMode: Boolean,
     onModeChanged: () -> Unit,
     onSignOut: () -> Unit,
+    onLanguageClick: (() -> Unit)?,
+    onChangeCityClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
         ProfileHeaderSection(
-            name = "Usuario",
-            email = userEmail ?: "Tu cuenta está activa"
+            name = userEmail ?: "Usuario",
+            email = if (canUseOwnerMode) "Propietario" else "Usuario"
         )
 
-        HorizontalDivider(
-            color = RixyColors.Border,
-            modifier = Modifier.padding(vertical = 8.dp)
+        GuestSectionTitle("Idioma")
+        SettingsPillRow(
+            title = "Idioma",
+            trailing = languageLabel,
+            titleColor = RixyColors.Brand,
+            onClick = onLanguageClick,
+            showChevron = onLanguageClick != null
         )
 
-        if (canUseOwnerMode) {
-            SectionHeader("Negocios")
-            SectionButton(
-                icon = Icons.Default.Business,
-                title = "Modo Propietario",
-                subtitle = "Administra tu negocio",
-                onClick = onModeChanged,
-                showChevron = true
-            )
-
-            HorizontalDivider(
-                color = RixyColors.Border,
-                modifier = Modifier.padding(vertical = 8.dp)
+        if (canUseOwnerMode || userEmail != null) {
+            GuestSectionTitle("Modo de Vista")
+            SettingsPillRow(
+                title = "Vista actual",
+                trailing = currentModeLabel,
+                titleColor = RixyColors.Brand,
+                onClick = if (canUseOwnerMode) onModeChanged else null,
+                showChevron = canUseOwnerMode
             )
         }
 
-        SectionButton(
-            icon = Icons.AutoMirrored.Filled.ExitToApp,
-            title = "Cerrar Sesión",
+        GuestSectionTitle("Ciudad seleccionada")
+        SettingsPillRow(
+            title = selectedCityName ?: "Seleccionar ciudad",
+            trailing = if (selectedCityName.isNullOrBlank()) "" else "Cambiar",
+            trailingColor = RixyColors.Brand,
+            onClick = onChangeCityClick,
+            showChevron = false
+        )
+
+        GuestSectionTitle("Cuenta")
+        SettingsPillRow(
+            title = "Cerrar sesión",
+            titleColor = RixyColors.Brand,
             onClick = onSignOut,
-            showChevron = false,
-            isDestructive = true
+            showChevron = false
+        )
+
+        GuestSectionTitle("Acerca de")
+        SettingsPillRow(
+            title = "Versión",
+            trailing = "1.0.0",
+            onClick = null,
+            showChevron = false
         )
     }
 }
@@ -266,11 +289,11 @@ private fun ProfileHeaderSection(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Surface(
-            modifier = Modifier.size(64.dp),
+            modifier = Modifier.size(48.dp),
             shape = CircleShape,
             color = RixyColors.BrandLight
         ) {
@@ -279,7 +302,7 @@ private fun ProfileHeaderSection(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
                     tint = RixyColors.Brand,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
         }
@@ -289,7 +312,9 @@ private fun ProfileHeaderSection(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = name,
-                style = RixyTypography.Title3
+                style = RixyTypography.Body,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = email,

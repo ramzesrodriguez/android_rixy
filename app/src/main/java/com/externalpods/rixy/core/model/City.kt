@@ -1,43 +1,45 @@
 package com.externalpods.rixy.core.model
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonNames
 
 @Serializable
 data class City(
     val id: String,
     val name: String,
     val slug: String,
-    @SerialName("hero_image_url")
-    @JsonNames("heroImageUrl")
     val heroImageUrl: String? = null,
-    @SerialName("is_active") val isActive: Boolean? = null,
-    @SerialName("is_publishing_enabled") val isPublishingEnabled: Boolean? = null,
-    @SerialName("is_ads_enabled") val isAdsEnabled: Boolean? = null,
+    val isActive: Boolean? = null,
+    val isPublishingEnabled: Boolean? = null,
+    val isAdsEnabled: Boolean? = null,
     val timezone: String? = null,
     val country: String? = null,
     val state: String? = null,
-    @SerialName("business_count") val businessCount: Int? = null,
-    @SerialName("listing_count") val listingCount: Int? = null,
-    @SerialName("user_count") val userCount: Int? = null,
-    @SerialName("total_businesses") val totalBusinesses: Int? = null,
-    @SerialName("total_listings") val totalListings: Int? = null,
-    @SerialName("total_users") val totalUsers: Int? = null,
-    @SerialName("city_slot_subscriptions") val citySlotSubscriptions: List<CitySlotSubscriptionCountItem>? = null,
-    @SerialName("city_slot_subscriptions_count") val citySlotSubscriptionsCount: Int? = null,
-    @SerialName("subscriptions_count") val subscriptionsCount: Int? = null,
-    @SerialName("created_at") val createdAt: String? = null,
-    @SerialName("updated_at") val updatedAt: String? = null
+    val businessCount: Int? = null,
+    val listingCount: Int? = null,
+    val userCount: Int? = null,
+    val totalBusinesses: Int? = null,
+    val totalListings: Int? = null,
+    val totalUsers: Int? = null,
+    val citySlotSubscriptions: List<CitySlotSubscriptionCountItem>? = null,
+    val citySlotSubscriptionsCount: Int? = null,
+    val subscriptionsCount: Int? = null,
+    val createdAt: String? = null,
+    val updatedAt: String? = null
 ) {
     // Computed properties (matching iOS resolvedXxx pattern)
     val resolvedBusinessCount: Int get() = businessCount ?: totalBusinesses ?: 0
     val resolvedListingCount: Int get() = listingCount ?: totalListings ?: 0
     val resolvedUserCount: Int get() = userCount ?: totalUsers ?: 0
-    val resolvedSubscriptionCount: Int get() = 
+    val resolvedSubscriptionCount: Int get() =
         citySlotSubscriptionsCount ?: subscriptionsCount ?: citySlotSubscriptions?.size ?: 0
-    
+
+    // iOS-compatible computed properties (nullable)
+    val resolvedBusinessCountOrNull: Int? get() = businessCount ?: totalBusinesses
+    val resolvedListingCountOrNull: Int? get() = listingCount ?: totalListings
+    val resolvedSubscriptionCountOrNull: Int? get() =
+        citySlotSubscriptionsCount ?: subscriptionsCount ?: citySlotSubscriptions?.size
+
     // Helper properties
     val hasActivePublishing: Boolean get() = isPublishingEnabled == true
     val hasActiveAds: Boolean get() = isAdsEnabled == true
@@ -52,27 +54,21 @@ data class CitySlotSubscriptionCountItem(
 
 @Serializable
 data class CitySummary(
-    val id: String,
-    val name: String,
-    val slug: String
+    val id: String? = null,
+    val name: String? = null,
+    val slug: String? = null
 )
 
 @Serializable
 data class CitySection(
     val id: String,
-    @SerialName("city_id")
-    @JsonNames("cityId")
     val cityId: String? = null,
     val key: String,
     val title: String,
     val subtitle: String? = null,
     val type: CitySectionType,
     val order: Int,
-    @SerialName("is_active")
-    @JsonNames("isActive")
     val isActive: Boolean? = null,
-    @SerialName("config_json")
-    @JsonNames("configJson")
     val configJson: Map<String, JsonElement>? = null
 ) {
     // Helper computed properties

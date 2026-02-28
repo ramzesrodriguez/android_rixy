@@ -128,12 +128,9 @@ interface OwnerApiService {
     ): Response<ApiResponse<Unit>>
 
     // City Slots
-    @GET("owner/city-slots")
-    suspend fun getCitySlots(): Response<ApiResponse<List<CitySlotSubscription>>>
-
-    @GET("owner/city-slots/availability")
+    @GET("owner/city-slots/availability/{citySlug}")
     suspend fun getCitySlotAvailability(
-        @Query("cityId") cityId: String
+        @Path("citySlug") citySlug: String
     ): Response<ApiResponse<CitySlotAvailabilityResponse>>
 
     @GET("owner/city-slots/subscriptions")
@@ -159,9 +156,9 @@ interface OwnerApiService {
         @Body request: CitySlotActionRequest
     ): Response<ApiResponse<CitySlotCheckoutResponse>>
 
-    @POST("owner/city-slots/{subscriptionId}/confirm")
+    @POST("owner/city-slots/confirm")
     suspend fun confirmCitySlotPayment(
-        @Path("subscriptionId") subscriptionId: String
+        @Body request: ConfirmPaymentRequest
     ): Response<ApiResponse<CitySlotSubscription>>
 
     @POST("owner/city-slots/{subscriptionId}/cancel")

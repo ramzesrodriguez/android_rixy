@@ -168,25 +168,29 @@ data class CheckoutResponse(
 
 @Serializable
 data class CreateCitySlotCheckoutRequest(
-    @SerialName("city_id") val cityId: String,
-    @SerialName("slot_type") val slotType: CitySlotType,
-    @SerialName("slot_index") val slotIndex: Int,
-    @SerialName("listing_id") val listingId: String,
-    @SerialName("business_id") val businessId: String? = null,
-    @SerialName("success_url") val successUrl: String = DEFAULT_CITY_SLOT_SUCCESS_URL,
-    @SerialName("cancel_url") val cancelUrl: String = DEFAULT_CITY_SLOT_CANCEL_URL
+    val businessId: String,
+    val slotType: CitySlotType,
+    val slotIndex: Int,
+    val listingId: String,
+    val successUrl: String = DEFAULT_CITY_SLOT_SUCCESS_URL,
+    val cancelUrl: String = DEFAULT_CITY_SLOT_CANCEL_URL
 )
 
 @Serializable
 data class CitySlotActionRequest(
-    @SerialName("success_url") val successUrl: String = DEFAULT_CITY_SLOT_SUCCESS_URL,
-    @SerialName("cancel_url") val cancelUrl: String = DEFAULT_CITY_SLOT_CANCEL_URL
+    val successUrl: String = DEFAULT_CITY_SLOT_SUCCESS_URL,
+    val cancelUrl: String = DEFAULT_CITY_SLOT_CANCEL_URL
 )
 
 @Serializable
 data class CancelSlotRequest(
     @SerialName("reason_code") val reasonCode: String? = "OWNER_CANCELED",
     val note: String? = null
+)
+
+@Serializable
+data class ConfirmPaymentRequest(
+    val sessionId: String
 )
 
 // --- Business Sections ---
@@ -279,5 +283,5 @@ data class UpdatePricingRequest(
 // Deep link constants (matching iOS)
 private const val DEFAULT_SUCCESS_URL = "rixy://payment/success?session_id={CHECKOUT_SESSION_ID}"
 private const val DEFAULT_CANCEL_URL = "rixy://payment/cancel"
-private const val DEFAULT_CITY_SLOT_SUCCESS_URL = "rixy://owner/city-slots?checkout=success&session_id={CHECKOUT_SESSION_ID}"
-private const val DEFAULT_CITY_SLOT_CANCEL_URL = "rixy://owner/city-slots?checkout=cancel"
+private const val DEFAULT_CITY_SLOT_SUCCESS_URL = "rixy://payment/success?type=slot&session_id={CHECKOUT_SESSION_ID}"
+private const val DEFAULT_CITY_SLOT_CANCEL_URL = "rixy://payment/cancel?type=slot"

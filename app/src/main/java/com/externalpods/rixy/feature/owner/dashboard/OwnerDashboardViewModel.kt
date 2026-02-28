@@ -3,6 +3,7 @@ package com.externalpods.rixy.feature.owner.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.externalpods.rixy.core.model.Business
+import com.externalpods.rixy.core.model.Listing
 import com.externalpods.rixy.core.model.ListingStatus
 import com.externalpods.rixy.core.model.OwnerAnalyticsOverview
 import com.externalpods.rixy.data.repository.OwnerRepository
@@ -20,7 +21,11 @@ data class OwnerDashboardUiState(
     val ownerName: String? = null,
     val publishedCount: Int = 0,
     val draftCount: Int = 0,
+    val pendingCount: Int = 0,
     val featuredCount: Int = 0,
+    val totalViews: Int = 0,
+    val uniqueVisitors: Int = 0,
+    val recentListings: List<Listing> = emptyList(),
     val isLoading: Boolean = false,
     val isRefreshing: Boolean = false,
     val error: String? = null
@@ -43,21 +48,43 @@ class OwnerDashboardViewModel(
             _uiState.update { it.copy(isLoading = true, error = null) }
             
             try {
-                // Load analytics
-                getAnalyticsUseCase(days = 30)
-                    .onSuccess { analytics ->
-                        _uiState.update { it.copy(analytics = analytics) }
+                // Load analytics (optional - may fail if no data yet)
+                try {
+                    val analytics = ownerRepository.getAnalytics(days = 30)
+                    _uiState.update { 
+                        it.copy(
+                            analytics = analytics,
+                            totalViews = analytics.totals.totalViews,
+                            uniqueVisitors = analytics.totals.uniqueVisitors
+                        )
                     }
+                } catch (e: Exception) {
+                    // Analytics may fail if no business/listings yet - this is OK
+                    android.util.Log.w("OwnerDashboard", "Analytics not available: ${e.message}")
+                }
                 
-                // Load business
-                val business = ownerRepository.getBusiness()
+                // Load business (optional - may not exist yet)
+                val business = try {
+                    ownerRepository.getBusiness()
+                } catch (e: Exception) {
+                    android.util.Log.w("OwnerDashboard", "No business found: ${e.message}")
+                    null
+                }
                 _uiState.update { it.copy(business = business) }
                 
                 // Load listings and calculate counts
-                val listings = ownerRepository.getListings()
+                val listings = try {
+                    ownerRepository.getListings()
+                } catch (e: Exception) {
+                    android.util.Log.w("OwnerDashboard", "No listings found: ${e.message}")
+                    emptyList()
+                }
                 val publishedCount = listings.count { it.status == ListingStatus.PUBLISHED }
                 val draftCount = listings.count { it.status == ListingStatus.DRAFT }
-                val featuredCount = listings.count { it.isFeatured == true }
+                val pendingCount = listings.count { it.status == ListingStatus.PENDING_REVIEW }
+                val featuredCount = listings.count { listing ->
+                    listing.isFeatured == true || (listing.paymentTransactions?.isNotEmpty() == true)
+                }
                 
                 _uiState.update { 
                     it.copy(
@@ -65,7 +92,9 @@ class OwnerDashboardViewModel(
                         ownerName = business?.name ?: business?.ownerName,
                         publishedCount = publishedCount,
                         draftCount = draftCount,
+                        pendingCount = pendingCount,
                         featuredCount = featuredCount,
+                        recentListings = listings.take(5),
                         isLoading = false
                     )
                 }
@@ -85,16 +114,33 @@ class OwnerDashboardViewModel(
             _uiState.update { it.copy(isRefreshing = true) }
             
             try {
-                getAnalyticsUseCase(days = 30)
-                    .onSuccess { analytics ->
-                        _uiState.update { it.copy(analytics = analytics) }
+                // Refresh analytics (optional)
+                try {
+                    val analytics = ownerRepository.getAnalytics(days = 30)
+                    _uiState.update { 
+                        it.copy(
+                            analytics = analytics,
+                            totalViews = analytics.totals.totalViews,
+                            uniqueVisitors = analytics.totals.uniqueVisitors
+                        )
                     }
+                } catch (e: Exception) {
+                    android.util.Log.w("OwnerDashboard", "Analytics refresh failed: ${e.message}")
+                }
                 
-                val listings = ownerRepository.getListings()
+                val listings = try {
+                    ownerRepository.getListings()
+                } catch (e: Exception) {
+                    android.util.Log.w("OwnerDashboard", "Listings refresh failed: ${e.message}")
+                    emptyList()
+                }
                 val business = _uiState.value.business
                 val publishedCount = listings.count { it.status == ListingStatus.PUBLISHED }
                 val draftCount = listings.count { it.status == ListingStatus.DRAFT }
-                val featuredCount = listings.count { it.isFeatured == true }
+                val pendingCount = listings.count { it.status == ListingStatus.PENDING_REVIEW }
+                val featuredCount = listings.count { listing ->
+                    listing.isFeatured == true || (listing.paymentTransactions?.isNotEmpty() == true)
+                }
                 
                 _uiState.update { 
                     it.copy(
@@ -102,7 +148,9 @@ class OwnerDashboardViewModel(
                         ownerName = business?.name ?: business?.ownerName,
                         publishedCount = publishedCount,
                         draftCount = draftCount,
+                        pendingCount = pendingCount,
                         featuredCount = featuredCount,
+                        recentListings = listings.take(5),
                         isRefreshing = false
                     )
                 }

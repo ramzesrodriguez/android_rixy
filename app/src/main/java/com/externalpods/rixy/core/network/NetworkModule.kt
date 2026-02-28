@@ -22,7 +22,8 @@ val networkModule = module {
 
     single {
         OkHttpClient.Builder()
-            .addInterceptor(AuthInterceptor(get()))
+            .addInterceptor(AuthInterceptor(get(), get()))
+            .authenticator(AuthAuthenticator(get(), get()))
             .addInterceptor(
                 HttpLoggingInterceptor().apply {
                     level = HttpLoggingInterceptor.Level.BODY
@@ -33,6 +34,8 @@ val networkModule = module {
             .writeTimeout(30, TimeUnit.SECONDS)
             .build()
     }
+
+    single { AuthTokenRefresher(get()) }
 
     single {
         val json: Json = get()

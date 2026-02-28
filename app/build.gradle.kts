@@ -85,6 +85,7 @@ dependencies {
 
     // Stripe Payments
     implementation(libs.stripe.android)
+    implementation(libs.androidx.browser)
 
     // Testing
     testImplementation(libs.junit)

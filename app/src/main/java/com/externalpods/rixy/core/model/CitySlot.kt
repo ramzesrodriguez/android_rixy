@@ -7,21 +7,41 @@ import kotlinx.serialization.json.JsonNames
 @Serializable
 data class CitySlotSubscription(
     val id: String,
-    @SerialName("city_id") val cityId: String,
-    @SerialName("owner_id") val ownerId: String,
-    @SerialName("business_id") val businessId: String,
-    @SerialName("slot_type") val slotType: CitySlotType,
+    @SerialName("city_id")
+    @JsonNames("cityId")
+    val cityId: String,
+    @SerialName("owner_id")
+    @JsonNames("ownerId")
+    val ownerId: String,
+    @SerialName("business_id")
+    @JsonNames("businessId")
+    val businessId: String,
+    @SerialName("slot_type")
+    @JsonNames("slotType")
+    val slotType: CitySlotType,
     val status: CitySlotStatus,
-    @SerialName("slot_index") val slotIndex: Int,
-    @SerialName("start_at") val startAt: String,
-    @SerialName("end_at") val endAt: String,
-    @SerialName("amount_cents") val amountCents: Int,
+    @SerialName("slot_index")
+    @JsonNames("slotIndex")
+    val slotIndex: Int,
+    @SerialName("start_at")
+    @JsonNames("startAt")
+    val startAt: String,
+    @SerialName("end_at")
+    @JsonNames("endAt")
+    val endAt: String,
+    @SerialName("amount_cents")
+    @JsonNames("amountCents")
+    val amountCents: Int,
     val currency: String,
-    @SerialName("created_at") val createdAt: String,
+    @SerialName("created_at")
+    @JsonNames("createdAt")
+    val createdAt: String,
     val city: CitySummary? = null,
     val business: BusinessSummary? = null,
     val assignment: CitySlotAssignment? = null,
-    @SerialName("days_remaining") val daysRemaining: Int? = null
+    @SerialName("days_remaining")
+    @JsonNames("daysRemaining")
+    val daysRemaining: Int? = null
 ) {
     // Computed properties (matching iOS)
     val isActive: Boolean get() = status == CitySlotStatus.ACTIVE
@@ -38,14 +58,30 @@ data class CitySlotSubscription(
 @Serializable
 data class CitySlotAssignment(
     val id: String,
-    @SerialName("city_id") val cityId: String,
-    @SerialName("subscription_id") val subscriptionId: String,
-    @SerialName("listing_id") val listingId: String,
-    @SerialName("slot_type") val slotType: CitySlotType,
-    @SerialName("slot_index") val slotIndex: Int,
-    @SerialName("is_active") val isActive: Boolean,
-    @SerialName("clicks_count") val clicksCount: Int = 0,
-    @SerialName("views_count") val viewsCount: Int = 0,
+    @SerialName("city_id")
+    @JsonNames("cityId")
+    val cityId: String,
+    @SerialName("subscription_id")
+    @JsonNames("subscriptionId")
+    val subscriptionId: String,
+    @SerialName("listing_id")
+    @JsonNames("listingId")
+    val listingId: String,
+    @SerialName("slot_type")
+    @JsonNames("slotType")
+    val slotType: CitySlotType,
+    @SerialName("slot_index")
+    @JsonNames("slotIndex")
+    val slotIndex: Int,
+    @SerialName("is_active")
+    @JsonNames("isActive")
+    val isActive: Boolean,
+    @SerialName("clicks_count")
+    @JsonNames("clicksCount")
+    val clicksCount: Int = 0,
+    @SerialName("views_count")
+    @JsonNames("viewsCount")
+    val viewsCount: Int = 0,
     val listing: ListingSummary? = null
 )
 
@@ -143,37 +179,59 @@ data class SlotBusiness(
 data class CitySlotAvailabilityResponse(
     val slots: List<SlotAvailabilityItem> = emptyList(),
     val pricing: List<SlotPricingItem> = emptyList(),
-    @SerialName("slot_types_availability") val slotTypesAvailability: List<SlotTypeAvailability> = emptyList()
+    @SerialName("slot_types_availability")
+    @JsonNames("slotTypesAvailability")
+    val slotTypesAvailability: List<SlotTypeAvailability> = emptyList()
 )
 
 @Serializable
 data class SlotAvailabilityItem(
-    @SerialName("slot_type") val slotType: CitySlotType,
+    @SerialName("slot_type")
+    @JsonNames("slotType")
+    val slotType: CitySlotType,
     val slots: List<SlotDetail> = emptyList()
 )
 
 @Serializable
 data class SlotDetail(
     val index: Int,
-    @SerialName("is_available") val isAvailable: Boolean,
-    @SerialName("current_subscription") val currentSubscription: CurrentSlotSubscription? = null
+    @SerialName("is_available")
+    @JsonNames("isAvailable")
+    val isAvailable: Boolean,
+    @SerialName("current_subscription")
+    @JsonNames("currentSubscription")
+    val currentSubscription: CurrentSlotSubscription? = null
 )
 
 @Serializable
 data class CurrentSlotSubscription(
     val id: String,
-    @SerialName("business_id") val businessId: String,
-    @SerialName("business_name") val businessName: String? = null,
-    @SerialName("end_at") val endAt: String
+    @SerialName("business_id")
+    @JsonNames("businessId")
+    val businessId: String,
+    @SerialName("business_name")
+    @JsonNames("businessName")
+    val businessName: String? = null,
+    @SerialName("end_at")
+    @JsonNames("endAt")
+    val endAt: String
 )
 
 @Serializable
 data class SlotPricingItem(
-    @SerialName("slot_type") val slotType: CitySlotType,
-    @SerialName("base_price_cents") val basePriceCents: Int,
+    @SerialName("slot_type")
+    @JsonNames("slotType")
+    val slotType: CitySlotType,
+    @SerialName("base_price_cents")
+    @JsonNames("basePriceCents")
+    val basePriceCents: Int,
     val currency: String,
-    @SerialName("available_slots") val availableSlots: Int,
-    @SerialName("total_slots") val totalSlots: Int
+    @SerialName("available_slots")
+    @JsonNames("availableSlots")
+    val availableSlots: Int,
+    @SerialName("total_slots")
+    @JsonNames("totalSlots")
+    val totalSlots: Int
 ) {
     val formattedPrice: String get() = "${basePriceCents / 100.0} $currency"
 }
@@ -205,15 +263,31 @@ data class CitySlot(
 
 @Serializable
 data class CitySlotCheckoutResponse(
-    @SerialName("subscription_id") val subscriptionId: String? = null,
-    @SerialName("session_id") val sessionId: String? = null,
-    @SerialName("checkout_url") val checkoutUrl: String? = null,
-    @SerialName("start_at") val startAt: String? = null,
-    @SerialName("end_at") val endAt: String? = null,
-    @SerialName("amount_cents") val amountCents: Int? = null,
+    @SerialName("subscription_id")
+    @JsonNames("subscriptionId")
+    val subscriptionId: String? = null,
+    @SerialName("session_id")
+    @JsonNames("sessionId")
+    val sessionId: String? = null,
+    @SerialName("checkout_url")
+    @JsonNames("checkoutUrl")
+    val checkoutUrl: String? = null,
+    @SerialName("start_at")
+    @JsonNames("startAt")
+    val startAt: String? = null,
+    @SerialName("end_at")
+    @JsonNames("endAt")
+    val endAt: String? = null,
+    @SerialName("amount_cents")
+    @JsonNames("amountCents")
+    val amountCents: Int? = null,
     val currency: String? = null,
-    @SerialName("client_secret") val clientSecret: String? = null,
-    @SerialName("publishable_key") val publishableKey: String? = null
+    @SerialName("client_secret")
+    @JsonNames("clientSecret")
+    val clientSecret: String? = null,
+    @SerialName("publishable_key")
+    @JsonNames("publishableKey")
+    val publishableKey: String? = null
 ) {
     val formattedPrice: String get() = "${(amountCents ?: 0) / 100.0} ${currency ?: "MXN"}"
 }

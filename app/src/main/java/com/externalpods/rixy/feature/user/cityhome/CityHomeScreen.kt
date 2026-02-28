@@ -20,11 +20,7 @@ import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddBusiness
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -74,7 +70,6 @@ import org.koin.core.parameter.parametersOf
  * - Recent feed with compact cards
  * - Business CTA section
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CityHomeScreen(
     city: City,
@@ -86,31 +81,31 @@ fun CityHomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     
-    Scaffold(
-        containerColor = RixyColors.Background,
-        topBar = {
-            TopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = RixyColors.Background),
-                title = {
-                    Text(
-                        text = uiState.city?.name ?: city.name,
-                        style = RixyTypography.H1,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                },
-                actions = {
-                    DSOutlineButton(
-                        title = "Cambiar",
-                        onClick = onChangeCity,
-                        size = DSButtonSize.SMALL,
-                        icon = Icons.Default.LocationOn
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Top Bar (replacing Scaffold topBar)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = uiState.city?.name ?: city.name,
+                style = RixyTypography.H1,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+            
+            DSOutlineButton(
+                title = "Cambiar",
+                onClick = onChangeCity,
+                size = DSButtonSize.SMALL,
+                icon = Icons.Default.LocationOn
             )
         }
-    ) { paddingValues ->
+        
         CityHomeContent(
             city = uiState.city ?: city,
             featured = uiState.featured,
@@ -122,7 +117,7 @@ fun CityHomeScreen(
             onListingClick = onListingClick,
             onSeeAllListings = onSeeAllListings,
             onBusinessCTAClick = onBusinessCTAClick,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
@@ -143,7 +138,7 @@ private fun CityHomeContent(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 32.dp)
+        contentPadding = PaddingValues(top = 16.dp, bottom = 80.dp)
     ) {
         if (isLoading) {
             // Loading State
@@ -179,9 +174,9 @@ private fun CityHomeContent(
             DSCityHeroSection(
                 cityName = city.name,
                 location = listOfNotNull(city.state, city.country).joinToString(", ").ifEmpty { null },
-                businessCount = city.resolvedBusinessCount,
-                listingCount = city.resolvedListingCount,
-                subscriptionCount = city.resolvedSubscriptionCount
+                businessCount = city.resolvedBusinessCountOrNull,
+                listingCount = city.resolvedListingCountOrNull,
+                subscriptionCount = city.resolvedSubscriptionCountOrNull
             )
         }
         
@@ -247,7 +242,7 @@ private fun CityHomeContent(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(12.dp))
             }
         }
 
@@ -420,6 +415,7 @@ private fun BannerSlotCard(
             .width(320.dp)
             .height(120.dp)
             .clip(RoundedCornerShape(16.dp))
+            .background(RixyColors.Surface)
             .clickable(onClick = onClick)
     ) {
         DSAsyncImage(

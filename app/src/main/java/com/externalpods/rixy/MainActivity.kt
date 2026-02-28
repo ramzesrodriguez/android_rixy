@@ -19,11 +19,14 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.externalpods.rixy.core.designsystem.theme.RixyTheme
+import com.externalpods.rixy.core.network.AuthTokenRefresher
 import com.externalpods.rixy.data.local.DataStoreManager
+import com.externalpods.rixy.data.local.TokenManager
 import com.externalpods.rixy.ui.ContentView
 import com.externalpods.rixy.service.PaymentHandler
 import com.externalpods.rixy.service.PaymentResult
 import com.externalpods.rixy.service.PaymentStatus
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.first
@@ -33,6 +36,8 @@ class MainActivity : ComponentActivity() {
     
     private val paymentHandler: PaymentHandler by inject()
     private val dataStoreManager: DataStoreManager by inject()
+    private val tokenManager: TokenManager by inject()
+    private val authTokenRefresher: AuthTokenRefresher by inject()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,6 +79,11 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onStart() {
+        super.onStart()
+        refreshTokenOnAppEntry()
+    }
     
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -100,7 +110,8 @@ class MainActivity : ComponentActivity() {
                 // Start polling for confirmation
                 paymentHandler.pollPaymentConfirmation(
                     type = result.type,
-                    id = result.id
+                    id = result.id,
+                    sessionId = result.sessionId
                 ).collect { status ->
                     when (status) {
                         is PaymentStatus.Polling -> {
@@ -120,6 +131,16 @@ class MainActivity : ComponentActivity() {
             }
             is PaymentResult.Cancelled -> {
                 onStatusUpdate(false, "Pago cancelado")
+            }
+        }
+    }
+
+    private fun refreshTokenOnAppEntry() {
+        lifecycleScope.launch(Dispatchers.IO) {
+            if (tokenManager.getToken().isNullOrBlank()) return@launch
+            val refreshedToken = authTokenRefresher.refreshAccessTokenWithFallback()
+            if (refreshedToken == null) {
+                android.util.Log.w("Auth", "Could not refresh token on app entry")
             }
         }
     }
